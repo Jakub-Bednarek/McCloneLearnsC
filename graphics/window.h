@@ -3,11 +3,12 @@
 
 #include <X11/Xlib.h>
 
+#define WINDOW_NAME "McCloneLearnsC v0.1"
+
 struct SimpleWindow {
     Display* display;
     Window window;
     XEvent lastEvent;
-    char* name; 
 };
 
 void create_window();

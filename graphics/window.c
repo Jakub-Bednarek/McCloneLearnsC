@@ -14,7 +14,6 @@ void create_window()
     }
 
     globalWindow = (struct SimpleWindow*) malloc(sizeof(struct SimpleWindow));
-    globalWindow->name = "MineClone v0.1";
     Display* display = XOpenDisplay(NULL);
     if(display == NULL)
     {
@@ -39,7 +38,7 @@ void destroy_window()
         exit(1);
     }
 
-    printf("Destroying window with name: %s\n", globalWindow->name);
+    printf("Destroying window with name: %s\n", WINDOW_NAME);
     free(globalWindow);
 }
 
