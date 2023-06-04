@@ -6,7 +6,7 @@ SRCS = $(wildcard *.c) $(wildcard graphics/*.c)
 all: compile run
 
 compile:
-	@echo "Build begins"
+	@echo "Build begins..."
 	@gcc ${FLGAS} ${SRCS} ${FLAGS} -o ${OUTPUT_DIR}/${EXE_NAME}
 	@echo "Build finished"
 

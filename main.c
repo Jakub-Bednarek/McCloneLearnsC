@@ -27,7 +27,7 @@ int main()
     // XDestroyWindow(display, window);
     // XCloseDisplay(display);
     create_window();
-    pull_events();
+    run_loop();
     destroy_window();
 
     return 0;
