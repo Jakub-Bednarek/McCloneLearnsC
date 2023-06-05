@@ -3,8 +3,6 @@
 
 #include <X11/Xlib.h>
 
-#define WINDOW_NAME "McCloneLearnsC v0.1"
-
 typedef int file_descriptor;
 
 struct simple_window {

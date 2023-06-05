@@ -1,4 +1,5 @@
 #include "window.h"
+#include "input.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +10,8 @@
 #define DEFAULT_Y_POS 0
 #define DEFAULT_WIDTH 1280
 #define DEFAULT_HEIGHT 720
+#define XLIB_SYM_INDEX 1
+#define WINDOW_NAME "McCloneLearnsC v0.1"
 
 struct simple_window* g_window = NULL;
 
@@ -68,6 +71,7 @@ void create_window()
     Window window = XCreateSimpleWindow(display, RootWindow(display, defaultScreen), DEFAULT_X_POS, DEFAULT_Y_POS, DEFAULT_WIDTH, DEFAULT_HEIGHT, 1, BlackPixel(display, defaultScreen), WhitePixel(display, defaultScreen));
     XSelectInput(display, window, WINDOW_EVENT_MASK);
     XMapWindow(display, window);
+    XStoreName(display, window, WINDOW_NAME);
 
     g_window->display = display;
     g_window->window = window;
@@ -101,6 +105,27 @@ void handle_window_resize_event(XConfigureEvent* event)
     }
 }
 
+void print_key_info(int key_sym, key_info* info)
+{
+    printf("Key pressed: %d, key_held: %d, state: %d\n", key_sym, info->key_held, info->state);
+}
+
+void process_key_event(XKeyEvent* key_event, key_state new_state)
+{
+    // KEY_HELD doesn't work atm
+    KeySym key_sym = XLookupKeysym(key_event, XLIB_SYM_INDEX);
+    if(g_input.keys_info[key_sym].state == PRESSED && new_state == PRESSED )
+    {
+        g_input.keys_info[key_sym].key_held = true;
+    }
+    else
+    {
+        g_input.keys_info[key_sym].key_held = false;
+        g_input.keys_info[key_sym].state = new_state;
+    }
+    print_key_info(key_sym, &(g_input.keys_info[key_sym]));
+}
+
 void dispatch_events()
 {    
     XFlush(g_window->display);
@@ -112,9 +137,11 @@ void dispatch_events()
        switch(lastEvent.type)
        {
             case KeyPress:
+                process_key_event(&lastEvent.xkey, PRESSED);
                 g_window->on_key_pressed(&lastEvent.xkey);
                 break;
             case KeyRelease:
+                process_key_event(&lastEvent.xkey, RELEASED);
                 g_window->on_key_released(&lastEvent.xkey);
                 break;
             case ButtonPress:
