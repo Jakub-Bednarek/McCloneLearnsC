@@ -76,14 +76,14 @@
 
 typedef enum 
 {
-    RELEASED = 0,
-    PRESSED
-} key_state;
+    released = 0,
+    pressed
+} KeyState;
 
 typedef struct
 {
     bool key_held;
-    key_state state;
+    KeyState state;
 } KeyInfo;
 
 typedef struct
@@ -99,7 +99,7 @@ Input g_input;
 
 void initialize_input(const int x_mouse_pos, const int y_mouse_pos)
 {
-    KeyInfo default_key_info = {.key_held = false, .state = RELEASED};
+    KeyInfo default_key_info = {.key_held = false, .state = released};
     for (int i = 0; i < MAX_KEY; i++)
     {
         g_input.keys_info[i] = default_key_info;

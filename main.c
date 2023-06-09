@@ -59,6 +59,7 @@ void run_game_loop(Timer* timer)
         update_timer(timer);
         tick(timer);
         dummy_loop();
+        draw();
     }
 }
 

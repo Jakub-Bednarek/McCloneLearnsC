@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/Xutil.h>
+#include<GL/gl.h>
+#include<GL/glu.h>
 
 #define WINDOW_EVENT_MASK KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | StructureNotifyMask
 #define DEFAULT_X_POS 0
@@ -63,17 +65,35 @@ void create_window()
     Display* display = XOpenDisplay(NULL);
     if(display == NULL)
     {
-        fprintf(stderr, "Cannot open display\n");
-        exit(1);
+        g_window->errorCode = displayCreationFailed;
+        return;
     }
 
-    int defaultScreen = DefaultScreen(display);
-    Window window = XCreateSimpleWindow(display, RootWindow(display, defaultScreen), DEFAULT_X_POS, DEFAULT_Y_POS, DEFAULT_WIDTH, DEFAULT_HEIGHT, 1, BlackPixel(display, defaultScreen), WhitePixel(display, defaultScreen));
-    XSelectInput(display, window, WINDOW_EVENT_MASK);
-    XMapWindow(display, window);
+    Window rootWindow = DefaultRootWindow(display);
+    GLint attributes[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+    XVisualInfo* visualInfo = glXChooseVisual(display, 0, attributes);
+
+    if(visualInfo == NULL)
+    {
+        g_window->errorCode = visualInfoCreationFailed;
+        return;
+    }
+
+    Colormap colormap = XCreateColormap(display, rootWindow, visualInfo->visual, AllocNone);
+    XSetWindowAttributes setWindowAttributes;
+    setWindowAttributes.colormap = colormap;
+    setWindowAttributes.event_mask = WINDOW_EVENT_MASK;
+
+    Window mainWindow = XCreateWindow(display, rootWindow, DEFAULT_X_POS, DEFAULT_Y_POS, DEFAULT_WIDTH, DEFAULT_HEIGHT, 0, visualInfo->depth, InputOutput, visualInfo->visual, CWColormap | CWEventMask, &setWindowAttributes);
+    XMapWindow(display, mainWindow);
+
+    GLXContext glContext = glXCreateContext(display, visualInfo, NULL, GL_TRUE);
+    glXMakeCurrent(display, mainWindow, glContext);
 
     g_window->display = display;
-    g_window->window = window;
+    g_window->root = rootWindow;
+    g_window->mainWindow = mainWindow;
+    g_window->context = glContext;
     g_window->on_key_pressed = dummy_on_key_pressed;
     g_window->on_key_released = dummy_on_key_released;
     g_window->on_button_pressed = dummy_on_button_pressed;
@@ -110,11 +130,11 @@ void print_key_info(int key_sym, KeyInfo* info)
     printf("Key pressed: %d, key_held: %d, state: %d\n", key_sym, info->key_held, info->state);
 }
 
-void process_key_event(XKeyEvent* key_event, key_state new_state)
+void process_key_event(XKeyEvent* key_event, KeyState new_state)
 {
     // KEY_HELD doesn't work atm
     KeySym key_sym = XLookupKeysym(key_event, XLIB_SYM_INDEX);
-    if(g_input.keys_info[key_sym].state == PRESSED && new_state == PRESSED )
+    if(g_input.keys_info[key_sym].state == pressed && new_state == pressed )
     {
         g_input.keys_info[key_sym].key_held = true;
     }
@@ -124,6 +144,32 @@ void process_key_event(XKeyEvent* key_event, key_state new_state)
         g_input.keys_info[key_sym].state = new_state;
     }
     print_key_info(key_sym, &(g_input.keys_info[key_sym]));
+}
+
+void draw()
+{
+    glEnable(GL_DEPTH_TEST); 
+    glViewport(0, 0, g_window->width, g_window->height);
+
+    glClearColor(1.0, 1.0, 1.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(-1., 1., -1., 1., 1., 20.);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(0., 0., 10., 0., 0., 0., 0., 1., 0.);
+
+    glBegin(GL_QUADS);
+    glColor3f(1., 0., 0.); glVertex3f(-.75, -.75, 0.);
+    glColor3f(0., 1., 0.); glVertex3f( .75, -.75, 0.);
+    glColor3f(0., 0., 1.); glVertex3f( .75,  .75, 0.);
+    glColor3f(1., 1., 0.); glVertex3f(-.75,  .75, 0.);
+    glEnd();
+
+    glXSwapBuffers(g_window->display, g_window->mainWindow);
 }
 
 void dispatch_window_events()
@@ -137,11 +183,11 @@ void dispatch_window_events()
        switch(lastEvent.type)
        {
             case KeyPress:
-                process_key_event(&lastEvent.xkey, PRESSED);
+                process_key_event(&lastEvent.xkey, pressed);
                 g_window->on_key_pressed(&lastEvent.xkey);
                 break;
             case KeyRelease:
-                process_key_event(&lastEvent.xkey, RELEASED);
+                process_key_event(&lastEvent.xkey, released);
                 g_window->on_key_released(&lastEvent.xkey);
                 break;
             case ButtonPress:
@@ -167,7 +213,7 @@ void update_window_title(const char* title)
 {
     if(g_window->display != NULL)
     {
-        XStoreName(g_window->display, g_window->window, title);
+        XStoreName(g_window->display, g_window->mainWindow, title);
         g_window->name = title;
     }
 }

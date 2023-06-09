@@ -1,4 +1,4 @@
-FLAGS = -lX11
+FLAGS = -lX11 -lGL -lGLU
 OUTPUT_DIR = "build/"
 EXE_NAME = "mcclone.out"
 SRCS = $(wildcard *.c) $(wildcard graphics/*.c)

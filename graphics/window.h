@@ -2,17 +2,27 @@
 #define WINDOW_H
 
 #include <X11/Xlib.h>
+#include <GL/glx.h>
 
 typedef int file_descriptor;
 
+typedef enum {
+    none = 0,
+    displayCreationFailed,
+    visualInfoCreationFailed
+} WindowErrorCode;
+
 typedef struct {
     Display* display;
-    Window window;
+    Window root;
+    Window mainWindow;
+    GLXContext context;
     const char* name;
     int x_pos;
     int y_pos;
     int width;
     int height;
+    WindowErrorCode errorCode;
     void (*on_key_pressed)(XKeyEvent*);
     void (*on_key_released)(XKeyEvent*);
     void (*on_button_pressed)(XButtonEvent*);
