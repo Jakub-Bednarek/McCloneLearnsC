@@ -11,7 +11,8 @@
 #define DEFAULT_WIDTH 1280
 #define DEFAULT_HEIGHT 720
 #define XLIB_SYM_INDEX 1
-#define WINDOW_NAME "McCloneLearnsC v0.1"
+#define DEFAULT_WINDOW_NAME "McCloneLearnsC v0.1"
+#define FPS_PREFIX "FPS: "
 
 struct simple_window* g_window = NULL;
 
@@ -71,7 +72,6 @@ void create_window()
     Window window = XCreateSimpleWindow(display, RootWindow(display, defaultScreen), DEFAULT_X_POS, DEFAULT_Y_POS, DEFAULT_WIDTH, DEFAULT_HEIGHT, 1, BlackPixel(display, defaultScreen), WhitePixel(display, defaultScreen));
     XSelectInput(display, window, WINDOW_EVENT_MASK);
     XMapWindow(display, window);
-    XStoreName(display, window, WINDOW_NAME);
 
     g_window->display = display;
     g_window->window = window;
@@ -81,6 +81,7 @@ void create_window()
     g_window->on_button_released = dummy_on_button_released;
     g_window->on_mouse_moved = dummy_on_mouse_motion;
     g_window->on_window_resized = dummy_on_window_resize;
+    update_window_title(DEFAULT_WINDOW_NAME);
 }
 
 void destroy_window()
@@ -91,7 +92,7 @@ void destroy_window()
         exit(1);
     }
 
-    printf("Destroying window with name: %s\n", WINDOW_NAME);
+    printf("Destroying window with name: %s\n", g_window->name);
     free(g_window);
 }
 
@@ -126,7 +127,7 @@ void process_key_event(XKeyEvent* key_event, key_state new_state)
     print_key_info(key_sym, &(g_input.keys_info[key_sym]));
 }
 
-void dispatch_events()
+void dispatch_window_events()
 {    
     XFlush(g_window->display);
     int events_pending = XEventsQueued(g_window->display, QueuedAlready);
@@ -163,10 +164,20 @@ void dispatch_events()
     }
 }
 
-void run_loop()
+void update_window_title(const char* title)
 {
-    while(1)
+    if(g_window->display != NULL)
     {
-        dispatch_events();
+        XStoreName(g_window->display, g_window->window, title);
+        g_window->name = title;
     }
+}
+
+void set_window_title_to_current_fps(double fps)
+{
+    char* fps_str = (char*)malloc(64);
+    sprintf(fps_str, "%f", fps);
+
+    update_window_title(fps_str);
+    free(fps_str);
 }

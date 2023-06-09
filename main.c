@@ -1,34 +1,74 @@
 #include "graphics/window.h"
+#include "graphics/timer.h"
+
+#include <stdio.h>
+#include <unistd.h>
+
+#define TICKS_THRESHOLD 20000
+
+void initialize_systems(timer* timer)
+{
+    printf("Initializing system...\n");
+
+    create_window();
+    initialize_timer(timer);
+
+    printf("Systems initialized!\n");
+}
+
+void clean_up()
+{
+    printf("Performing cleanup...\n");
+    destroy_window();
+    printf("Cleanup done!\n");
+}
+
+void tick(timer* timer)
+{
+    static double total_delta = 0;
+    total_delta += timer->delta_in_micro;
+    while(total_delta > (TICKS_THRESHOLD))
+    {
+        set_window_title_to_current_fps(timer->fps);
+        total_delta -= TICKS_THRESHOLD;
+    }
+}
+
+void dummy_loop()
+{
+    int sum = 0;
+    for(int i = 0; i < 10000000; i++)
+    {
+        if (i > 50000)
+        {
+            sum += i;
+        }
+        else if (i > 1000000)
+        {
+            sum -= i;
+        }
+    }
+}
+
+void run_game_loop(timer* timer)
+{
+    printf("Starting game loop!\n");
+    mark_new_timestep(timer);
+    while(1) {
+        dispatch_window_events();
+        update_timer(timer);
+        tick(timer);
+        dummy_loop();
+    }
+}
 
 int main()
 {
-    // Display* display;
-    // Window window;
-    // XEvent lastEvent;
-    // const char* window_name = "Minecraft Clone 0.1";
+    timer main_timer;
     
-    // display = XOpenDisplay(NULL);
-    // if(display == NULL)
-    // {
-    //     fprintf(stderr, "Cannot open display\n");
-    //     exit(1);
-    // }
-
-    // int defaultScreen = DefaultScreen(display);
-    // window = XCreateSimpleWindow(display, RootWindow(display, defaultScreen), 10, 10, 200, 200, 1, BlackPixel(display, defaultScreen), WhitePixel(display, defaultScreen));
-    // XSelectInput(display, window, ExposureMask | KeyPressMask);
-    // XMapWindow(display, window);
-
-    // do
-    // {
-    //     XNextEvent(display, &lastEvent);
-    // } while (lastEvent.type != KeyPress);
-    
-    // XDestroyWindow(display, window);
-    // XCloseDisplay(display);
-    create_window();
-    run_loop();
-    destroy_window();
+    initialize_systems(&main_timer);
+    run_game_loop(&main_timer);
+    clean_up();
 
     return 0;
 }

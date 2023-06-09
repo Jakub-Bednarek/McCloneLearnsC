@@ -1,4 +1,6 @@
-#pragma once
+#ifndef INPUT_H
+#define INPUT_H
+
 #include <stdbool.h>
 #include <X11/keysymdef.h>
 
@@ -107,3 +109,5 @@ void initialize_input(const int x_mouse_pos, const int y_mouse_pos)
     g_input.is_mouse_left_pressed = false;
     g_input.is_mouse_right_pressed = false;
 }
+
+#endif // INPUT_H

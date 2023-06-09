@@ -8,6 +8,7 @@ typedef int file_descriptor;
 struct simple_window {
     Display* display;
     Window window;
+    const char* name;
     int x_pos;
     int y_pos;
     int width;
@@ -29,7 +30,9 @@ void set_on_window_resize_callback(void (*callback)(XConfigureEvent*));
 
 void create_window();
 void destroy_window();
-void run_loop();
+void dispatch_window_events();
+void update_window_title(const char* title);
+void set_window_title_to_current_fps(double fps);
 
 extern struct simple_window* g_window;
 
