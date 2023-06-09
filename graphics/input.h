@@ -74,32 +74,32 @@
 #elif __WIN32
 #endif
 
-typedef enum
+typedef enum 
 {
-    PRESSED = 0,
-    RELEASED = 1
+    RELEASED = 0,
+    PRESSED
 } key_state;
 
 typedef struct
 {
     bool key_held;
     key_state state;
-} key_info;
+} KeyInfo;
 
 typedef struct
 {
-    key_info keys_info[MAX_KEY];
+    KeyInfo keys_info[MAX_KEY];
     int x_mouse_pos;
     int y_mouse_pos;
     bool is_mouse_left_pressed;
     bool is_mouse_right_pressed;
-} input;
+} Input;
 
-input g_input;
+Input g_input;
 
 void initialize_input(const int x_mouse_pos, const int y_mouse_pos)
 {
-    key_info default_key_info = {.key_held = false, .state = RELEASED};
+    KeyInfo default_key_info = {.key_held = false, .state = RELEASED};
     for (int i = 0; i < MAX_KEY; i++)
     {
         g_input.keys_info[i] = default_key_info;

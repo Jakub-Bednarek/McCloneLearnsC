@@ -12,9 +12,8 @@
 #define DEFAULT_HEIGHT 720
 #define XLIB_SYM_INDEX 1
 #define DEFAULT_WINDOW_NAME "McCloneLearnsC v0.1"
-#define FPS_PREFIX "FPS: "
 
-struct simple_window* g_window = NULL;
+SimpleWindow* g_window = NULL;
 
 void dummy_on_key_pressed(XKeyEvent*) {}
 void dummy_on_key_released(XKeyEvent*) {}
@@ -60,7 +59,7 @@ void create_window()
         exit(1);
     }
 
-    g_window = (struct simple_window*) malloc(sizeof(struct simple_window));
+    g_window = (SimpleWindow*) malloc(sizeof(SimpleWindow));
     Display* display = XOpenDisplay(NULL);
     if(display == NULL)
     {
@@ -106,7 +105,7 @@ void handle_window_resize_event(XConfigureEvent* event)
     }
 }
 
-void print_key_info(int key_sym, key_info* info)
+void print_key_info(int key_sym, KeyInfo* info)
 {
     printf("Key pressed: %d, key_held: %d, state: %d\n", key_sym, info->key_held, info->state);
 }
@@ -175,9 +174,7 @@ void update_window_title(const char* title)
 
 void set_window_title_to_current_fps(double fps)
 {
-    char* fps_str = (char*)malloc(64);
+    char fps_str[64];
     sprintf(fps_str, "%f", fps);
-
     update_window_title(fps_str);
-    free(fps_str);
 }

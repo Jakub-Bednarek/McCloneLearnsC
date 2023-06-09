@@ -6,7 +6,7 @@
 
 #define TICKS_THRESHOLD 20000
 
-void initialize_systems(timer* timer)
+void initialize_systems(Timer* timer)
 {
     printf("Initializing system...\n");
 
@@ -23,7 +23,7 @@ void clean_up()
     printf("Cleanup done!\n");
 }
 
-void tick(timer* timer)
+void tick(Timer* timer)
 {
     static double total_delta = 0;
     total_delta += timer->delta_in_micro;
@@ -50,7 +50,7 @@ void dummy_loop()
     }
 }
 
-void run_game_loop(timer* timer)
+void run_game_loop(Timer* timer)
 {
     printf("Starting game loop!\n");
     mark_new_timestep(timer);
@@ -64,7 +64,7 @@ void run_game_loop(timer* timer)
 
 int main()
 {
-    timer main_timer;
+    Timer main_timer;
     
     initialize_systems(&main_timer);
     run_game_loop(&main_timer);

@@ -15,9 +15,9 @@ typedef struct {
     int delta_in_micro;
     double delta_in_sec;
     double fps;
-} timer;
+} Timer;
 
-void initialize_timer(timer* timer)
+void initialize_timer(Timer* timer)
 {
     timer->last_timepoint = clock();
     timer->delta_in_micro = 0;
@@ -25,14 +25,14 @@ void initialize_timer(timer* timer)
     timer->fps = 0;
 }
 
-void mark_new_timestep(timer* timer)
+void mark_new_timestep(Timer* timer)
 {
     timer->last_timepoint = clock();
     timer->delta_in_micro = 0;
     timer->delta_in_sec = 0.0;
 }
 
-void update_delta_time(timer* timer)
+void update_delta_time(Timer* timer)
 {
     clock_t now = clock();
     double delta = (double)(now - timer->last_timepoint) / CLOCKS_PER_SEC;
@@ -41,11 +41,10 @@ void update_delta_time(timer* timer)
     timer->delta_in_sec = delta;
 }
 
-void update_timer(timer* timer)
+void update_timer(Timer* timer)
 {
     update_delta_time(timer);
     timer->fps = 1.0 / timer->delta_in_sec;
-    printf("delta: %f, fps: %f\n", timer->delta_in_sec, timer->fps);
 }
 
 #endif // TIMER_H

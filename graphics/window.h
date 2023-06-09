@@ -5,7 +5,7 @@
 
 typedef int file_descriptor;
 
-struct simple_window {
+typedef struct {
     Display* display;
     Window window;
     const char* name;
@@ -19,7 +19,7 @@ struct simple_window {
     void (*on_button_released)(XButtonEvent*);
     void (*on_mouse_moved)(XMotionEvent*);
     void (*on_window_resized)(XConfigureEvent*);
-};
+} SimpleWindow;
 
 void set_on_key_press_callback(void (*callback)(XKeyEvent*));
 void set_on_key_released_callback(void (*callback)(XKeyEvent*));
@@ -34,6 +34,6 @@ void dispatch_window_events();
 void update_window_title(const char* title);
 void set_window_title_to_current_fps(double fps);
 
-extern struct simple_window* g_window;
+extern SimpleWindow* g_window;
 
 #endif // WINDOW_H
