@@ -1,28 +1,33 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+#define DISPLAY_FAILURE 1
+#define DEFAULT_VISUAL_INFO_FAILURE 2
+#define GLX_LOAD_FAILURE 3
+#define FB_CONFIG_FAILURE 4
+#define GLX_CONTEXT_FAILURE 5
+#define GL_LOAD_FAILURE 6
+
+#include "core/error.h"
+
 #include <X11/Xlib.h>
-#include <GL/glx.h>
 
-typedef int file_descriptor;
+#include <glad/gl.h>
+#include <glad/glx.h>
 
-typedef enum {
-    none = 0,
-    displayCreationFailed,
-    visualInfoCreationFailed
-} WindowErrorCode;
+#include <stdbool.h>
 
 typedef struct {
     Display* display;
-    Window root;
-    Window mainWindow;
+    Window main_window;
     GLXContext context;
+    Colormap colormap;
     const char* name;
     int x_pos;
     int y_pos;
     int width;
     int height;
-    WindowErrorCode errorCode;
+    McError error_code;
     void (*on_key_pressed)(XKeyEvent*);
     void (*on_key_released)(XKeyEvent*);
     void (*on_button_pressed)(XButtonEvent*);
@@ -31,20 +36,17 @@ typedef struct {
     void (*on_window_resized)(XConfigureEvent*);
 } SimpleWindow;
 
-void set_on_key_press_callback(void (*callback)(XKeyEvent*));
-void set_on_key_released_callback(void (*callback)(XKeyEvent*));
-void set_on_button_pressed_callback(void (*callback)(XButtonEvent*));
-void set_on_button_released_callback(void (*callback)(XButtonEvent*));
-void set_on_mouse_motion_callback(void (*callback)(XMotionEvent*));
-void set_on_window_resize_callback(void (*callback)(XConfigureEvent*));
+void set_on_key_press_callback(SimpleWindow*, void (*callback)(XKeyEvent*));
+void set_on_key_released_callback(SimpleWindow*, void (*callback)(XKeyEvent*));
+void set_on_button_pressed_callback(SimpleWindow*, void (*callback)(XButtonEvent*));
+void set_on_button_released_callback(SimpleWindow*, void (*callback)(XButtonEvent*));
+void set_on_mouse_motion_callback(SimpleWindow*, void (*callback)(XMotionEvent*));
+void set_on_window_resize_callback(SimpleWindow*, void (*callback)(XConfigureEvent*));
 
-void create_window();
-void destroy_window();
-void dispatch_window_events();
-void update_window_title(const char* title);
-void set_window_title_to_current_fps(double fps);
-void draw();
-
-extern SimpleWindow* g_window;
+SimpleWindow* window_create(unsigned int width, unsigned int height);
+void window_destroy(SimpleWindow*);
+bool window_dispatch_events(SimpleWindow*);
+void update_window_title(SimpleWindow*, const char* title);
+void set_window_title_to_current_fps(SimpleWindow*, double fps);
 
 #endif // WINDOW_H
