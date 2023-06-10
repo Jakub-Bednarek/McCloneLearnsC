@@ -95,19 +95,17 @@ typedef struct
     bool is_mouse_right_pressed;
 } Input;
 
-Input g_input;
-
-void initialize_input(const int x_mouse_pos, const int y_mouse_pos)
-{
-    KeyInfo default_key_info = {.key_held = false, .state = released};
-    for (int i = 0; i < MAX_KEY; i++)
-    {
-        g_input.keys_info[i] = default_key_info;
-    }
-    g_input.x_mouse_pos = x_mouse_pos;
-    g_input.y_mouse_pos = y_mouse_pos;
-    g_input.is_mouse_left_pressed = false;
-    g_input.is_mouse_right_pressed = false;
-}
+// void initialize_input(const int x_mouse_pos, const int y_mouse_pos)
+// {
+//     KeyInfo default_key_info = {.key_held = false, .state = released};
+//     for (int i = 0; i < MAX_KEY; i++)
+//     {
+//         g_input.keys_info[i] = default_key_info;
+//     }
+//     g_input.x_mouse_pos = x_mouse_pos;
+//     g_input.y_mouse_pos = y_mouse_pos;
+//     g_input.is_mouse_left_pressed = false;
+//     g_input.is_mouse_right_pressed = false;
+// }
 
 #endif // INPUT_H

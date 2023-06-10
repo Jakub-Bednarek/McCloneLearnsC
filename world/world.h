@@ -1,6 +1,8 @@
 #ifndef WORLD_H
 #define WORLD_H
 
+#include "core/input.h"
+
 #include <GL/gl.h>
 #include <GL/glx.h>
 
@@ -8,9 +10,15 @@
 #include <stdlib.h>
 
 float vertices[] = {
-    -0.5f, -0.5f, 0.0f,
+     0.5f,  0.5f, 0.0f,
      0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
+    -0.5f, -0.5f, 0.0f,
+    -0.5f,  0.5f, 0.0f 
+};
+
+unsigned int indices[] = {
+    0, 1, 3,
+    1, 2, 3
 };
 
 const char* vertex_shader_source = "#version 330 core\n"
@@ -78,12 +86,15 @@ Shader shader_create() {
     return shader;
 }
 
-unsigned int buffers_create(unsigned int* vertex_buffer_id, unsigned int* vertex_array_id)
+unsigned int buffers_create(unsigned int* vertex_buffer_id, unsigned int* vertex_array_id, unsigned int* element_buffer_id)
 {
     glGenVertexArrays(1, vertex_array_id);
     glGenBuffers(1, vertex_buffer_id);
+    glGenBuffers(1, element_buffer_id);
 
     glBindVertexArray(*vertex_array_id);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *element_buffer_id);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, *vertex_buffer_id);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
@@ -100,14 +111,29 @@ void gl_clean_up(Shader shader, unsigned int* vertex_buffer_id, unsigned int* ve
     printf("Shader, VAO and VBO destroyed\n");
 }
 
-void render(Shader shader, unsigned int vertex_array_id)
+void gl_set_draw_mode_callback(XKeyEvent* key_event)
+{
+    static unsigned int current_gl_mode = GL_FILL;
+    if(XLookupKeysym(key_event, 1) == MC_SPACE) {
+        if(current_gl_mode == GL_FILL) {
+            current_gl_mode = GL_LINE;
+        }
+        else {
+            current_gl_mode = GL_FILL;
+        }
+        glPolygonMode(GL_FRONT_AND_BACK, current_gl_mode);
+    }
+}
+
+void render(Shader shader, unsigned int vertex_array_id, unsigned int element_buffer_id)
 {
     glClearColor(0.5, 0.3, 0.7, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(shader);
     glBindVertexArray(vertex_array_id);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer_id);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 #endif // WORLD_H

@@ -31,10 +31,13 @@ int main()
         exit(1);
     }
 
+    set_on_key_press_callback(simple_window, gl_set_draw_mode_callback);
+
     Shader shader = shader_create();
     unsigned int vbo;
     unsigned int vao;
-    buffers_create(&vbo, &vao);
+    unsigned int ebo;
+    buffers_create(&vbo, &vao, &ebo);
 
     while(true) {
         simple_timer_update(&simple_timer);
@@ -42,7 +45,7 @@ int main()
             break;
         }
         tick(simple_window, &simple_timer);
-        render(shader, vao);
+        render(shader, vao, ebo);
         window_swap_buffers(simple_window);
     }
 
