@@ -2,6 +2,7 @@
 #define WORLD_H
 
 #include "core/input.h"
+#include "graphics/shader_loader.h"
 
 #include <GL/gl.h>
 #include <GL/glx.h>
@@ -20,20 +21,6 @@ unsigned int indices[] = {
     0, 1, 3,
     1, 2, 3
 };
-
-const char* vertex_shader_source = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-
-const char* fragment_shader_source = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\0";
 
 unsigned int shader_compile(unsigned int shader_type, const char* shader_source)
 {
@@ -79,9 +66,14 @@ typedef unsigned int Shader;
 
 Shader shader_create() {
     Shader shader;
+    char* vertex_shader_source = shader_load_source("res/shaders/vertex.vert");
+    char* fragment_shader_source = shader_load_source("res/shaders/fragment.frag");
     unsigned int vertex_shader_id = shader_compile(GL_VERTEX_SHADER, vertex_shader_source);
     unsigned int fragment_shader_id = shader_compile(GL_FRAGMENT_SHADER, fragment_shader_source);
     shader = shader_program_create(vertex_shader_id, fragment_shader_id);
+
+    free(vertex_shader_source);
+    free(fragment_shader_source);
 
     return shader;
 }
