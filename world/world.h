@@ -2,7 +2,9 @@
 #define WORLD_H
 
 #include "core/input.h"
+#include "core/timer.h"
 #include "graphics/shader_loader.h"
+#include <cglm/cglm.h>
 
 #include <GL/gl.h>
 #include <GL/glx.h>
@@ -117,12 +119,21 @@ void gl_set_draw_mode_callback(XKeyEvent* key_event)
     }
 }
 
-void render(Shader shader, unsigned int vertex_array_id, unsigned int element_buffer_id)
+void render(SimpleTimer* timer, Shader shader, unsigned int vertex_array_id, unsigned int element_buffer_id)
 {
+    static double total_passed = 0.0;
+    total_passed += timer->delta_in_sec * 1000.0;
     glClearColor(0.5, 0.3, 0.7, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    mat4 transform;
+    glm_mat4_identity(transform);
+    glm_rotate(transform, glm_rad(total_passed), (vec3) { 1.0, 0.0, 0.0} );
+
     glUseProgram(shader);
+    unsigned int transform_loc = glGetUniformLocation(shader, "transform");
+    glUniformMatrix4fv(transform_loc, 1, GL_FALSE, transform[0]);
+
     glBindVertexArray(vertex_array_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer_id);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

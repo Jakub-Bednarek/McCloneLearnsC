@@ -45,7 +45,7 @@ int main()
             break;
         }
         tick(simple_window, &simple_timer);
-        render(shader, vao, ebo);
+        render(&simple_timer, shader, vao, ebo);
         window_swap_buffers(simple_window);
     }
 
