@@ -15,7 +15,7 @@ void dummy_on_key_released(XKeyEvent*) {}
 void dummy_on_button_pressed(XButtonEvent*) {}
 void dummy_on_button_released(XButtonEvent*) {}
 void dummy_on_mouse_motion(XMotionEvent*) {}
-void dummy_on_window_resize(XConfigureEvent*) {}
+void dummy_on_window_resize(XConfigureEvent* event) { glViewport(0, 0, event->width, event->height); }
 
 void set_on_key_press_callback(SimpleWindow* window, void (*callback)(XKeyEvent*))
 {
@@ -112,7 +112,7 @@ SimpleWindow* window_create(unsigned int width, unsigned int height)
 
     GLint context_attributes[] = {
         GLX_CONTEXT_MAJOR_VERSION_ARB, 4,
-        GLX_CONTEXT_MINOR_VERSION_ARB, 0,
+        GLX_CONTEXT_MINOR_VERSION_ARB, 6,
         GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
         None
     };
@@ -140,7 +140,7 @@ SimpleWindow* window_create(unsigned int width, unsigned int height)
     simple_window->display = display;
     simple_window->main_window = main_window;
     simple_window->colormap = colormap;
-    simple_window->name = "GLAD MODERN GLX WITH X11";
+    simple_window->name = "OpenGL Window";
     simple_window->on_key_pressed = dummy_on_key_pressed;
     simple_window->on_key_released = dummy_on_key_released;
     simple_window->on_button_pressed = dummy_on_button_pressed;
@@ -159,7 +159,7 @@ void window_destroy(SimpleWindow* window)
         exit(1);
     }
 
-    printf("Destroying window with name: %s\n", window->name);
+    printf("Destroying window with name: %s \n", window->name);
     glXMakeCurrent(window->display, 0, 0);
     glXDestroyContext(window->display, window->context);
     
@@ -168,6 +168,11 @@ void window_destroy(SimpleWindow* window)
     XCloseDisplay(window->display);
 
     free(window);
+}
+
+void window_swap_buffers(SimpleWindow* window)
+{
+    glXSwapBuffers(window->display, window->main_window);
 }
 
 void handle_window_resize_event(SimpleWindow* window, XConfigureEvent* event)
@@ -222,10 +227,6 @@ bool window_dispatch_events(SimpleWindow* window)
        }
        --events_pending;
     }
-
-    glClearColor(0.5, 0.3, 0.7, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glXSwapBuffers(window->display, window->main_window);
 
     return true;
 }

@@ -45,6 +45,7 @@ void set_on_window_resize_callback(SimpleWindow*, void (*callback)(XConfigureEve
 
 SimpleWindow* window_create(unsigned int width, unsigned int height);
 void window_destroy(SimpleWindow*);
+void window_swap_buffers(SimpleWindow*);
 bool window_dispatch_events(SimpleWindow*);
 void update_window_title(SimpleWindow*, const char* title);
 void set_window_title_to_current_fps(SimpleWindow*, double fps);
