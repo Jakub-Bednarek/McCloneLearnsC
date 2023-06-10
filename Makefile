@@ -1,13 +1,16 @@
-FLAGS = -lX11 -lGL -lGLU
+PWD = $(shell pwd)
+FLAGS = -L${PWD}/vendor/glew/lib/libGLEW -lGLU -lGL -lX11 
+INCLUDE = -I ./vendor/glad/include
 OUTPUT_DIR = "build/"
 EXE_NAME = "mcclone.out"
-SRCS = $(wildcard *.c) $(wildcard graphics/*.c)
+SRCS = $(wildcard *.c) $(wildcard graphics/*.c) $(wildcard vendor/glad/src/*.c)
 
 all: compile run
 
 compile:
 	@echo "Build begins..."
-	@gcc ${FLGAS} ${SRCS} ${FLAGS} -o ${OUTPUT_DIR}/${EXE_NAME}
+	@echo ${FLAGS}
+	@gcc ${SRCS} ${FLAGS} ${INCLUDE} -o ${OUTPUT_DIR}/${EXE_NAME}
 	@echo "Build finished"
 
 run:

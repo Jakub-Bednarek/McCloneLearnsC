@@ -43,6 +43,7 @@ void destroy_window();
 void dispatch_window_events();
 void update_window_title(const char* title);
 void set_window_title_to_current_fps(double fps);
+void draw();
 
 extern SimpleWindow* g_window;
 

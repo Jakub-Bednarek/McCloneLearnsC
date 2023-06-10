@@ -1,5 +1,6 @@
+#include "graphics/cube.h"
 #include "graphics/window.h"
-#include "graphics/timer.h"
+#include "core/timer.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -60,6 +61,7 @@ void run_game_loop(Timer* timer)
         tick(timer);
         dummy_loop();
         draw();
+        render();
     }
 }
 
