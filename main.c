@@ -1,5 +1,5 @@
 #include "graphics/window.h"
-#include "world/world.h"
+#include "graphics/renderer.h"
 #include "core/timer.h"
 
 #include <stdio.h>
@@ -35,9 +35,10 @@ int main()
 
     Shader shader = shader_create();
     unsigned int vbo;
+    unsigned int cbo;
     unsigned int vao;
     unsigned int ebo;
-    buffers_create(&vbo, &vao, &ebo);
+    buffers_create(&vbo, &cbo, &vao, &ebo);
 
     while(true) {
         simple_timer_update(&simple_timer);
@@ -49,7 +50,7 @@ int main()
         window_swap_buffers(simple_window);
     }
 
-    gl_clean_up(shader, &vbo, &vao);
+    gl_clean_up(shader, &vbo, &cbo, &vao, &ebo);
     window_destroy(simple_window);
 
     return 0;

@@ -98,7 +98,7 @@ SimpleWindow* window_create(unsigned int width, unsigned int height)
     printf("GLX loaded successfuly. Version major: %d | Version minor: %d\n", GLAD_VERSION_MAJOR(glx_version), GLAD_VERSION_MINOR(glx_version));
 
     GLint visual_attributes[] = {
-        GLX_RENDER_TYPE, GLX_RGBA_BIT,
+        GLX_RENDER_TYPE, GLX_RGBA_BIT, GLX_DEPTH_SIZE, 24,
         GLX_DOUBLEBUFFER, 1,
         None
     };
