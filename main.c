@@ -24,6 +24,7 @@ int main()
 {
     SimpleTimer simple_timer = simple_timer_create();
     SimpleWindow* simple_window = window_create(1920, 1080);
+    Camera camera = camera_create();
 
     if(simple_window->error_code != MC_ERROR_NONE) {
         printf("SimpleWindow creation failure with errorCode: %d\n", simple_window->error_code);
@@ -46,7 +47,7 @@ int main()
             break;
         }
         tick(simple_window, &simple_timer);
-        render(&simple_timer, shader, vao, ebo);
+        render(&camera, &simple_timer, shader, vao, ebo);
         window_swap_buffers(simple_window);
     }
 
