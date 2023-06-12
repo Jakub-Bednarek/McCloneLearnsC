@@ -1,5 +1,4 @@
 #include "window.h"
-#include "core/input.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +6,7 @@
 #include <X11/Xutil.h>
 #include <X11/extensions/Xfixes.h>
 
-#define WINDOW_EVENT_MASK KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | StructureNotifyMask
+#define WINDOW_EVENT_MASK KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | StructureNotifyMask | LeaveWindowMask
 #define DEFAULT_X_WINDOW_POS 0
 #define DEFAULT_Y_WINDOW_POS 0
 
@@ -37,7 +36,7 @@ void set_on_button_released_callback(SimpleWindow* window, void (*callback)(XBut
     window->on_button_pressed = callback;
 }
 
-void set_on_mouse_motion_callback(SimpleWindow* window, void (*callback)(XMotionEvent*))
+void set_on_mouse_motion_callback(SimpleWindow* window, void (*callback)(MouseMoveEvent*))
 {
     window->on_mouse_moved = callback;
 }
@@ -137,12 +136,15 @@ SimpleWindow* window_create(unsigned int width, unsigned int height)
     XWindowAttributes get_window_attributes;
     XGetWindowAttributes(display, main_window, &get_window_attributes);
     XFixesHideCursor(display, main_window);
+    XWarpPointer(display, main_window, main_window, 0, 0, width, height, (float)(width) / 2.0f, (float)(height) / 2.0f);
     glViewport(0, 0, get_window_attributes.width, get_window_attributes.height);
 
     simple_window->display = display;
     simple_window->main_window = main_window;
     simple_window->colormap = colormap;
     simple_window->name = "OpenGL Window";
+    simple_window->mouse_x_center = (float)(width) / 2.0f;
+    simple_window->mouse_y_center = (float)(height) / 2.0f;
     simple_window->on_key_pressed = dummy_on_key_pressed;
     simple_window->on_key_released = dummy_on_key_released;
     simple_window->on_button_pressed = dummy_on_button_pressed;
@@ -150,7 +152,23 @@ SimpleWindow* window_create(unsigned int width, unsigned int height)
     simple_window->on_mouse_moved = dummy_on_mouse_motion;
     simple_window->on_window_resized = dummy_on_window_resize;
 
+
     return simple_window;
+}
+
+void window_handle_mouse_move_event(SimpleWindow* window, XMotionEvent* event)
+{
+    if(event->x == (int)(window->mouse_x_center) && event->y == (int)(window->mouse_y_center)) {
+        return;
+    }
+    MouseMoveEvent ev;
+    ev.x = event->x;
+    ev.y = event->y;
+    ev.delta_x = ev.x - window->mouse_x_center;
+    ev.delta_y = ev.y - window->mouse_y_center;
+
+    window->on_mouse_moved(&ev);
+    XWarpPointer(window->display, window->main_window, window->main_window, 0, 0, window->width, window->height, window->mouse_x_center, window->mouse_y_center);
 }
 
 bool window_is_key_pressed(SimpleWindow* window, KeySym key_sym)
@@ -190,7 +208,7 @@ void window_swap_buffers(SimpleWindow* window)
     glXSwapBuffers(window->display, window->main_window);
 }
 
-void handle_window_resize_event(SimpleWindow* window, XConfigureEvent* event)
+void window_handle_resize_event(SimpleWindow* window, XConfigureEvent* event)
 {
     if(window->width != event->width || window->height != event->height)
     {
@@ -228,10 +246,10 @@ bool window_dispatch_events(SimpleWindow* window)
                 window->on_button_released(&lastEvent.xbutton);
                 break;
             case MotionNotify:
-                window->on_mouse_moved(&lastEvent.xmotion);
+                window_handle_mouse_move_event(window, &lastEvent.xmotion);
                 break;
             case ConfigureNotify:
-                handle_window_resize_event(window, &lastEvent.xconfigure);
+                window_handle_resize_event(window, &lastEvent.xconfigure);
                 break;
             case ClientMessage:
                 if((Atom)lastEvent.xclient.data.l[0] == wm_delete_window) {

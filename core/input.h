@@ -86,6 +86,13 @@ typedef struct
     KeyState state;
 } KeyInfo;
 
+typedef struct {
+    float x;
+    float y;
+    float delta_x;
+    float delta_y;
+} MouseMoveEvent;
+
 typedef struct
 {
     KeyInfo keys_info[MAX_KEY];
@@ -94,18 +101,5 @@ typedef struct
     bool is_mouse_left_pressed;
     bool is_mouse_right_pressed;
 } Input;
-
-// void initialize_input(const int x_mouse_pos, const int y_mouse_pos)
-// {
-//     KeyInfo default_key_info = {.key_held = false, .state = released};
-//     for (int i = 0; i < MAX_KEY; i++)
-//     {
-//         g_input.keys_info[i] = default_key_info;
-//     }
-//     g_input.x_mouse_pos = x_mouse_pos;
-//     g_input.y_mouse_pos = y_mouse_pos;
-//     g_input.is_mouse_left_pressed = false;
-//     g_input.is_mouse_right_pressed = false;
-// }
 
 #endif // INPUT_H

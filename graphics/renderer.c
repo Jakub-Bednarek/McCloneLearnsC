@@ -46,7 +46,6 @@ void camera_recalculate_mat(Camera* camera)
     vec3 eye;
     glm_vec3_add(camera->pos, camera->front, eye);
     glm_lookat_rh(eye, camera->pos, camera->up, view);
-
     memcpy(camera->view, view, sizeof(view));
 }
 
@@ -123,22 +122,11 @@ void gl_set_draw_mode_callback(XKeyEvent* key_event)
     }
 }
 
-void gl_update_mouse_delta(XMotionEvent* event)
+void gl_update_mouse_delta(MouseMoveEvent* event)
 {
-    if(mouse_first_move) {
-        mouse_last_x = event->x;
-        mouse_last_y = event->y;
-        mouse_first_move = false;
-        return;
-    }
-    float x_delta = event->x - mouse_last_x;
-    float y_delta = mouse_last_y - event->y;
-    mouse_last_x = event->x;
-    mouse_last_y = event->y;
-
-    const static float sensitivity = 0.15f;
-    global_cam->yaw += x_delta * sensitivity;
-    global_cam->pitch +=  y_delta * sensitivity;
+    const static float sensitivity = 0.08f;
+    global_cam->yaw += event->delta_x * sensitivity;
+    global_cam->pitch +=  event->delta_y * sensitivity;
 
     if(global_cam->pitch > 89.0f) {
         global_cam->pitch = 89.0f;
@@ -241,15 +229,17 @@ void render(SimpleWindow* window, Camera* camera, SimpleTimer* timer, Shader sha
     camera_update_input(camera, window);
     camera_recalculate_mat(camera);
 
+    static size_t blocks_x = 100;
+    static size_t blocks_z = 100;
     glBindVertexArray(vertex_array_id);
-    for(size_t i = 0; i < 10; i++)
+    for(size_t i = 0; i < blocks_z; i++)
     {
-        for(size_t j = 0; j < 10; j++)
+        for(size_t j = 0; j < blocks_x; j++)
         {
             glm_translate(model, (vec3){1.0f, 0.0f, 0.0f});
             shader_upload_data(shader, model, camera->view, proj);
             glDrawArrays(GL_TRIANGLES, 0, 12*3);
         }
-        glm_translate(model, (vec3) {-10.0f, -1.0f, 0.0f});
+        glm_translate(model, (vec3) {-(float)(blocks_x), -1.0f, 0.0f});
     }
 }

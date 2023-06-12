@@ -35,7 +35,7 @@ extern void buffers_create(unsigned int*, unsigned int*, unsigned int*, unsigned
 
 extern void gl_clean_up(Shader, unsigned int*, unsigned int*, unsigned int*, unsigned int*);
 extern void gl_set_draw_mode_callback(XKeyEvent*);
-extern void gl_update_mouse_delta(XMotionEvent*);
+extern void gl_update_mouse_delta(MouseMoveEvent*);
 
 extern Shader shader_create();
 extern unsigned int shader_compile(unsigned int, const char*);
