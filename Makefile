@@ -9,6 +9,9 @@ config:
 compile:
 	@cd build && make
 
+clean:
+	@cd build && rm -rf ./*
+
 run:
 	@echo "Running ${EXE_NAME}"
 	@./${OUTPUT_DIR}/${EXE_NAME}

@@ -6,13 +6,10 @@
 #include "graphics/shader_loader.h"
 #include <cglm/cglm.h>
 
-#include <GL/gl.h>
-#include <GL/glx.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 
-static GLfloat cube_vertices[] = {
+static float cube_vertices[] = {
     -0.5f, -0.5f, -0.5f, // triangle 1 : begin
     -0.5f, -0.5f,  0.5f,
     -0.5f,  0.5f,  0.5f, // triangle 1 : end
@@ -51,7 +48,7 @@ static GLfloat cube_vertices[] = {
      0.5f, -0.5f,  0.5f
 };
 
-static const GLfloat cube_colors[] = {
+static const float cube_colors[] = {
     0.583f,  0.771f,  0.014f,
     0.609f,  0.115f,  0.436f,
     0.327f,  0.483f,  0.844f,

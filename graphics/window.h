@@ -43,6 +43,8 @@ void set_on_button_released_callback(SimpleWindow*, void (*callback)(XButtonEven
 void set_on_mouse_motion_callback(SimpleWindow*, void (*callback)(XMotionEvent*));
 void set_on_window_resize_callback(SimpleWindow*, void (*callback)(XConfigureEvent*));
 
+bool window_is_key_pressed(SimpleWindow*, KeySym);
+
 SimpleWindow* window_create(unsigned int width, unsigned int height);
 void window_destroy(SimpleWindow*);
 void window_swap_buffers(SimpleWindow*);

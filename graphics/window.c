@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include <X11/Xutil.h>
+#include <X11/extensions/Xfixes.h>
 
 #define WINDOW_EVENT_MASK KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | StructureNotifyMask
 #define DEFAULT_X_WINDOW_POS 0
@@ -135,6 +136,7 @@ SimpleWindow* window_create(unsigned int width, unsigned int height)
 
     XWindowAttributes get_window_attributes;
     XGetWindowAttributes(display, main_window, &get_window_attributes);
+    XFixesHideCursor(display, main_window);
     glViewport(0, 0, get_window_attributes.width, get_window_attributes.height);
 
     simple_window->display = display;
@@ -149,6 +151,19 @@ SimpleWindow* window_create(unsigned int width, unsigned int height)
     simple_window->on_window_resized = dummy_on_window_resize;
 
     return simple_window;
+}
+
+bool window_is_key_pressed(SimpleWindow* window, KeySym key_sym)
+{
+    KeyCode key_code = XKeysymToKeycode(window->display, key_sym);
+    int target_byte = key_code / 8;
+    int target_bit = key_code % 8;
+    int target_mask = 0x01 << target_bit;
+
+    char keys_return[32] = {0};
+    XQueryKeymap(window->display, keys_return);
+
+    return (keys_return[target_byte] & target_mask) && 1;
 }
 
 void window_destroy(SimpleWindow* window)
