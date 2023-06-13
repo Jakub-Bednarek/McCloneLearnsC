@@ -18,6 +18,14 @@
 
 #include <stdbool.h>
 
+#define WINDOW_ADAPT_CALLBACK_STRUCT(func_name, event_type) \
+typedef struct { \
+    void (*callback)(event_type*, void*);\
+    void* user_data_ptr; \
+} event_type ## Callback; \
+
+WINDOW_ADAPT_CALLBACK_STRUCT(on_key_pressed_callback, XKeyEvent)
+
 typedef struct {
     Display* display;
     Window main_window;
@@ -37,7 +45,10 @@ typedef struct {
     void (*on_button_released)(XButtonEvent*);
     void (*on_mouse_moved)(MouseMoveEvent*);
     void (*on_window_resized)(XConfigureEvent*);
+    XKeyEventCallback c;
 } SimpleWindow;
+
+
 
 void set_on_key_press_callback(SimpleWindow*, void (*callback)(XKeyEvent*));
 void set_on_key_released_callback(SimpleWindow*, void (*callback)(XKeyEvent*));

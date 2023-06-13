@@ -14,7 +14,7 @@ void dummy_on_key_pressed(XKeyEvent*) {}
 void dummy_on_key_released(XKeyEvent*) {}
 void dummy_on_button_pressed(XButtonEvent*) {}
 void dummy_on_button_released(XButtonEvent*) {}
-void dummy_on_mouse_motion(XMotionEvent*) {}
+void dummy_on_mouse_motion(MouseMoveEvent*) {}
 void dummy_on_window_resize(XConfigureEvent* event) { glViewport(0, 0, event->width, event->height); }
 
 void set_on_key_press_callback(SimpleWindow* window, void (*callback)(XKeyEvent*))
@@ -151,7 +151,6 @@ SimpleWindow* window_create(unsigned int width, unsigned int height)
     simple_window->on_button_released = dummy_on_button_released;
     simple_window->on_mouse_moved = dummy_on_mouse_motion;
     simple_window->on_window_resized = dummy_on_window_resize;
-
 
     return simple_window;
 }
