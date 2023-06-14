@@ -9,7 +9,7 @@
 #define GL_LOAD_FAILURE 6
 
 #include "core/error.h"
-#include "core/input.h"
+#include "core/event.h"
 
 #include <X11/Xlib.h>
 
@@ -20,11 +20,16 @@
 
 #define WINDOW_ADAPT_CALLBACK_STRUCT(func_name, event_type) \
 typedef struct { \
-    void (*callback)(event_type*, void*);\
+    void (*callback)(const event_type*, void*);\
     void* user_data_ptr; \
 } event_type ## Callback; \
 
-WINDOW_ADAPT_CALLBACK_STRUCT(on_key_pressed_callback, XKeyEvent)
+WINDOW_ADAPT_CALLBACK_STRUCT(on_key_press_callback, KeyPressEvent)
+WINDOW_ADAPT_CALLBACK_STRUCT(on_key_release_callback, KeyReleaseEvent)
+WINDOW_ADAPT_CALLBACK_STRUCT(on_button_press_callback, ButtonPressEvent)
+WINDOW_ADAPT_CALLBACK_STRUCT(on_button_release_callback, ButtonReleaseEvent)
+WINDOW_ADAPT_CALLBACK_STRUCT(on_mouse_move_callback, MouseMoveEvent)
+WINDOW_ADAPT_CALLBACK_STRUCT(on_window_resize_callback, WindowResizeEvent)
 
 typedef struct {
     Display* display;
@@ -39,31 +44,28 @@ typedef struct {
     float mouse_x_center;
     float mouse_y_center;
     McError error_code;
-    void (*on_key_pressed)(XKeyEvent*);
-    void (*on_key_released)(XKeyEvent*);
-    void (*on_button_pressed)(XButtonEvent*);
-    void (*on_button_released)(XButtonEvent*);
-    void (*on_mouse_moved)(MouseMoveEvent*);
-    void (*on_window_resized)(XConfigureEvent*);
-    XKeyEventCallback c;
+    KeyPressEventCallback key_press_callback;
+    KeyReleaseEventCallback key_release_callback;
+    ButtonPressEventCallback button_press_callback;
+    ButtonReleaseEventCallback button_release_callback;
+    MouseMoveEventCallback mouse_move_callback;
+    WindowResizeEventCallback window_resize_callback;
 } SimpleWindow;
 
+extern void set_on_key_press_callback(SimpleWindow*, void (*)(const KeyPressEvent*, void*), void*);
+extern void set_on_key_release_callback(SimpleWindow*, void (*)(const KeyReleaseEvent*, void*), void*);
+extern void set_on_button_press_callback(SimpleWindow*, void (*)(const ButtonPressEvent*, void*), void*);
+extern void set_on_button_release_callback(SimpleWindow*, void (*)(const ButtonReleaseEvent*, void*), void*);
+extern void set_on_mouse_motion_callback(SimpleWindow*, void (*)(const MouseMoveEvent*, void*), void*);
+extern void set_on_window_resize_callback(SimpleWindow*, void (*)(const WindowResizeEvent*, void*), void*);
 
+extern bool window_is_key_pressed(SimpleWindow*, KeySym);
 
-void set_on_key_press_callback(SimpleWindow*, void (*callback)(XKeyEvent*));
-void set_on_key_released_callback(SimpleWindow*, void (*callback)(XKeyEvent*));
-void set_on_button_pressed_callback(SimpleWindow*, void (*callback)(XButtonEvent*));
-void set_on_button_released_callback(SimpleWindow*, void (*callback)(XButtonEvent*));
-void set_on_mouse_motion_callback(SimpleWindow*, void (*callback)(MouseMoveEvent*));
-void set_on_window_resize_callback(SimpleWindow*, void (*callback)(XConfigureEvent*));
-
-bool window_is_key_pressed(SimpleWindow*, KeySym);
-
-SimpleWindow* window_create(unsigned int width, unsigned int height);
-void window_destroy(SimpleWindow*);
-void window_swap_buffers(SimpleWindow*);
-bool window_dispatch_events(SimpleWindow*);
-void update_window_title(SimpleWindow*, const char* title);
-void set_window_title_to_current_fps(SimpleWindow*, double fps);
+extern SimpleWindow* window_create(unsigned int width, unsigned int height);
+extern void window_destroy(SimpleWindow*);
+extern void window_swap_buffers(SimpleWindow*);
+extern bool window_dispatch_events(SimpleWindow*);
+extern void window_update_title(SimpleWindow*, const char* title);
+extern void window_set_title_to_current_fps(SimpleWindow*, double fps);
 
 #endif // WINDOW_H

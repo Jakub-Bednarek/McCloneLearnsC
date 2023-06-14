@@ -86,13 +86,6 @@ typedef struct
     KeyState state;
 } KeyInfo;
 
-typedef struct {
-    float x;
-    float y;
-    float delta_x;
-    float delta_y;
-} MouseMoveEvent;
-
 typedef struct
 {
     KeyInfo keys_info[MAX_KEY];

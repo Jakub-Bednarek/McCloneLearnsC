@@ -34,8 +34,8 @@ extern void camera_recalculate_mat(Camera*);
 extern void buffers_create(unsigned int*, unsigned int*, unsigned int*, unsigned int*);
 
 extern void gl_clean_up(Shader, unsigned int*, unsigned int*, unsigned int*, unsigned int*);
-extern void gl_set_draw_mode_callback(XKeyEvent*);
-extern void gl_update_mouse_delta(MouseMoveEvent*);
+extern void gl_set_draw_mode_callback(const KeyPressEvent*, void*);
+extern void gl_update_mouse_delta(const MouseMoveEvent*, void*);
 
 extern Shader shader_create();
 extern unsigned int shader_compile(unsigned int, const char*);

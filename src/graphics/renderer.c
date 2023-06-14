@@ -77,6 +77,8 @@ void camera_update_input(Camera* camera, SimpleWindow* window)
         move[2] *= -CAMERA_SPEED;
     }
     glm_vec3_add(camera->pos, move, camera->pos);
+
+    // printf("[x: %f, y:%f, z:%f]\n", camera->pos[0], camera->pos[1], camera->pos[2]);
 }
 
 void buffers_create(unsigned int* vertex_buffer_id, unsigned int* color_buffer_id, unsigned int* vertex_array_id, unsigned int* element_buffer_id)
@@ -108,10 +110,10 @@ void gl_clean_up(Shader shader, unsigned int* vertex_buffer_id, unsigned int* co
     printf("Shader, VAO and VBO destroyed\n");
 }
 
-void gl_set_draw_mode_callback(XKeyEvent* key_event)
+void gl_set_draw_mode_callback(const KeyPressEvent* key_event, void*)
 {
     static unsigned int current_gl_mode = GL_FILL;
-    if(XLookupKeysym(key_event, 1) == MC_SPACE) {
+    if(key_event->key_sym == MC_SPACE) {
         if(current_gl_mode == GL_FILL) {
             current_gl_mode = GL_LINE;
         }
@@ -122,7 +124,7 @@ void gl_set_draw_mode_callback(XKeyEvent* key_event)
     }
 }
 
-void gl_update_mouse_delta(MouseMoveEvent* event)
+void gl_update_mouse_delta(const MouseMoveEvent* event, void*)
 {
     const static float sensitivity = 0.08f;
     global_cam->yaw += event->delta_x * sensitivity;

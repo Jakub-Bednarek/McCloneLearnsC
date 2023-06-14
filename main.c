@@ -15,7 +15,7 @@ void tick(SimpleWindow* window, SimpleTimer* timer)
     total_delta += timer->delta_in_micro;
     while(total_delta > TICKS_THRESHOLD)
     {
-        set_window_title_to_current_fps(window, timer->fps);
+        window_set_title_to_current_fps(window, timer->fps);
         total_delta -= TICKS_THRESHOLD;
     }
 }
@@ -33,8 +33,8 @@ int main()
         exit(1);
     }
 
-    set_on_key_press_callback(simple_window, gl_set_draw_mode_callback);
-    set_on_mouse_motion_callback(simple_window, gl_update_mouse_delta);
+    set_on_key_press_callback(simple_window, gl_set_draw_mode_callback, NULL);
+    set_on_mouse_motion_callback(simple_window, gl_update_mouse_delta, NULL);
 
     Shader shader = shader_create();
     unsigned int vbo;
