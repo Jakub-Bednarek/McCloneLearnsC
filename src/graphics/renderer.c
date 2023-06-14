@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "utils/file_loader.h"
 
 #include <stdbool.h>
 
@@ -7,7 +8,6 @@
 float mouse_last_x = 0.0f;
 float mouse_last_y = 0.0f;
 bool mouse_first_move = true;
-Camera* global_cam = NULL;
 
 Camera camera_create()
 {
@@ -77,8 +77,6 @@ void camera_update_input(Camera* camera, SimpleWindow* window)
         move[2] *= -CAMERA_SPEED;
     }
     glm_vec3_add(camera->pos, move, camera->pos);
-
-    // printf("[x: %f, y:%f, z:%f]\n", camera->pos[0], camera->pos[1], camera->pos[2]);
 }
 
 void buffers_create(unsigned int* vertex_buffer_id, unsigned int* color_buffer_id, unsigned int* vertex_array_id, unsigned int* element_buffer_id)
@@ -124,32 +122,33 @@ void gl_set_draw_mode_callback(const KeyPressEvent* key_event, void*)
     }
 }
 
-void gl_update_mouse_delta(const MouseMoveEvent* event, void*)
+void gl_update_mouse_delta(const MouseMoveEvent* event, void* user_data_ptr)
 {
     const static float sensitivity = 0.08f;
-    global_cam->yaw += event->delta_x * sensitivity;
-    global_cam->pitch +=  event->delta_y * sensitivity;
+    Camera* camera = (Camera*)(user_data_ptr);
+    camera->yaw += event->delta_x * sensitivity;
+    camera->pitch +=  event->delta_y * sensitivity;
 
-    if(global_cam->pitch > 89.0f) {
-        global_cam->pitch = 89.0f;
+    if(camera->pitch > 89.0f) {
+        camera->pitch = 89.0f;
     }
-    if(global_cam->pitch < -89.0f) {
-        global_cam->pitch = -89.0f;
+    if(camera->pitch < -89.0f) {
+        camera->pitch = -89.0f;
     }
 
     vec3 direction;
-    direction[0] = cos(glm_rad(global_cam->yaw)) * cos(glm_rad(global_cam->pitch));
-    direction[1] = sin(glm_rad(global_cam->pitch));
-    direction[2] = sin(glm_rad(global_cam->yaw)) * cos(glm_rad(global_cam->pitch));
-    memcpy(global_cam->front, direction, sizeof(direction));
+    direction[0] = cos(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
+    direction[1] = sin(glm_rad(camera->pitch));
+    direction[2] = sin(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
+    memcpy(camera->front, direction, sizeof(direction));
 
-    glm_normalize(global_cam->front);
+    glm_normalize(camera->front);
 }
 
 Shader shader_create() {
     Shader shader;
-    char* vertex_shader_source = shader_load_source("res/shaders/vertex.vert");
-    char* fragment_shader_source = shader_load_source("res/shaders/fragment.frag");
+    char* vertex_shader_source = file_load("res/shaders/vertex.vert");
+    char* fragment_shader_source = file_load("res/shaders/fragment.frag");
     unsigned int vertex_shader_id = shader_compile(GL_VERTEX_SHADER, vertex_shader_source);
     unsigned int fragment_shader_id = shader_compile(GL_FRAGMENT_SHADER, fragment_shader_source);
     shader = shader_program_create(vertex_shader_id, fragment_shader_id);

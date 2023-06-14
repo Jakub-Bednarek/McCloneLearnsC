@@ -56,19 +56,15 @@ void set_on_window_resize_callback(SimpleWindow* window, void (*callback)(const 
 
 void window_handle_key_press_event(SimpleWindow* window, const XKeyEvent* key_press_event)
 {
-    printf("HANDLE KEY PRESS\n");
     KeyPressEvent event;
-    printf("TRANSLATE PRESS\n");
     event.key_sym = XkbKeycodeToKeysym(window->display, key_press_event->keycode, 0, key_press_event->state & ShiftMask ? 1 : 0);
     
-    printf("CALLLLL\n");
     int x = 0;
     window->key_press_callback.callback(&event, (void*)(x));
 }
 
 void window_handle_key_release_event(SimpleWindow* window, const XKeyEvent* key_release_event)
 {
-    printf("HANDLE KEY REL\n");
     KeyReleaseEvent event;
     event.key_sym = XkbKeycodeToKeysym(window->display, key_release_event->keycode, 0, key_release_event->state & ShiftMask ? 1 : 0);
 

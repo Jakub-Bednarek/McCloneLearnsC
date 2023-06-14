@@ -25,7 +25,6 @@ int main()
     SimpleTimer simple_timer = simple_timer_create();
     SimpleWindow* simple_window = window_create(1920, 1080);
     Camera camera = camera_create();
-    global_cam = &camera;
 
     if(simple_window->error_code != MC_ERROR_NONE) {
         printf("SimpleWindow creation failure with errorCode: %d\n", simple_window->error_code);
@@ -34,7 +33,7 @@ int main()
     }
 
     set_on_key_press_callback(simple_window, gl_set_draw_mode_callback, NULL);
-    set_on_mouse_motion_callback(simple_window, gl_update_mouse_delta, NULL);
+    set_on_mouse_motion_callback(simple_window, gl_update_mouse_delta, (void*)(&camera));
 
     Shader shader = shader_create();
     unsigned int vbo;

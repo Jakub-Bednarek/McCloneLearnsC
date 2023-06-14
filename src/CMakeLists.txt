@@ -16,12 +16,10 @@ set(CORE_SOURCES
 
 set(GRAPHICS_HEADERS
     graphics/renderer.h
-    graphics/shader_loader.h
     graphics/window.h)
 
 set(GRAPHICS_SOURCES
     graphics/renderer.c
-    graphics/shader_loader.c
     graphics/window.c)
 
 set(WORLD_HEADERS
@@ -29,6 +27,12 @@ set(WORLD_HEADERS
 
 set(WORLD_SOURCES)
 
-add_library(${LIBRARY_NAME} STATIC ${CORE_SOURCES} ${GRAPHICS_SOURCES} ${WORLD_SOURCES})
+set(UTILS_HEADERS
+    utils/file_loader.h)
+
+set(UTILS_SOURCES
+    utils/file_loader.c)
+
+add_library(${LIBRARY_NAME} STATIC ${CORE_SOURCES} ${GRAPHICS_SOURCES} ${WORLD_SOURCES} ${UTILS_SOURCES})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${INCLUDE_DIRS})
 target_link_libraries(${LIBRARY_NAME} ${LINUX_LIBS})

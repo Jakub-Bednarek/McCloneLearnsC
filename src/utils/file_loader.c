@@ -1,23 +1,18 @@
-#include "shader_loader.h"
+#include "file_loader.h"
 
-char* shader_load_source(const char* path)
+char* file_load(const char* path)
 {
-    FILE* fptr;
-    char* buffer;
-    long num_bytes;
-    fptr = fopen(path, "r");
-
+    FILE* fptr = fopen(path, "r");
     if(fptr == NULL) {
         printf("Failed to open file: %s\n", path);
         return "";
     }
 
     fseek(fptr, 0L, SEEK_END);
-    num_bytes = ftell(fptr);
+    const long num_bytes = ftell(fptr);
     fseek(fptr, 0L, SEEK_SET);
 
-    buffer = (char*)calloc(num_bytes, sizeof(char));
-
+    char* buffer = (char*)calloc(num_bytes, sizeof(char));
     if(buffer == NULL) {
         printf("Failed to allocate buffer for read\n");
         return "";

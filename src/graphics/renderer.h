@@ -24,8 +24,6 @@ typedef struct {
     float yaw;
 } Camera;
 
-extern Camera* global_cam;
-
 extern Camera camera_create();
 void camera_update_input(Camera*, SimpleWindow*);
 extern void camera_move(Camera*, float);

@@ -3,7 +3,6 @@
 
 #include "core/input.h"
 #include "core/timer.h"
-#include "graphics/shader_loader.h"
 #include <cglm/cglm.h>
 
 #include <stdio.h>
