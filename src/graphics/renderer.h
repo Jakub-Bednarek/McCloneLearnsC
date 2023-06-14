@@ -20,6 +20,8 @@ typedef struct {
     vec3 front;
     vec3 pos;
     vec3 up;
+    float current_x_direction;
+    float current_y_direction;
     float pitch;
     float yaw;
 } Camera;

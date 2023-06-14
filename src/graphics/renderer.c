@@ -12,11 +12,24 @@ bool mouse_first_move = true;
 Camera camera_create()
 {
     Camera camera;
-    memcpy(camera.up, (vec3){0.0f, 1.0f, 0.0f}, sizeof(camera.up));
-    memcpy(camera.pos, (vec3){0.0f, 0.0f, -13.0f}, sizeof(camera.pos));
-    memcpy(camera.front, (vec3){0.0f, 0.0f, -1.0f}, sizeof(camera.front));
+    camera.up[0] = 0.0f;
+    camera.up[1] = 1.0f;
+    camera.up[2] = 0.0f;
+
+    camera.pos[0] =  0.0f;
+    camera.pos[1] =  0.0f;
+    camera.pos[2] = -13.0f;
+
+    camera.front[0] =  0.0f;
+    camera.front[1] =  0.0f;
+    camera.front[2] = -1.0f;
+
     camera.pitch = 0.0f;
     camera.yaw = -90.0f;
+
+    camera.current_x_direction = cos(glm_rad(camera.yaw));
+    camera.current_y_direction = sin(glm_rad(camera.yaw));
+
     mat4 view;
     glm_mat4_identity(view);
 
@@ -51,32 +64,29 @@ void camera_recalculate_mat(Camera* camera)
 
 void camera_update_input(Camera* camera, SimpleWindow* window)
 {
-    vec3 move = {0.0f, 0.0f, 0.0f};
+    static vec3 world_up = {0.0f, 1.0f, 0.0f};
     if(window_is_key_pressed(window, MC_W)) {
-        move[0] += camera->front[0] * -CAMERA_SPEED;
-        move[1] += camera->front[1] * -CAMERA_SPEED;
-        move[2] += camera->front[2] * -CAMERA_SPEED;
+        camera->pos[0] += camera->current_x_direction * -CAMERA_SPEED;
+        camera->pos[2] += camera->current_y_direction * -CAMERA_SPEED;
     }
     if(window_is_key_pressed(window, MC_S)) {
-        move[0] += camera->front[0] * CAMERA_SPEED;
-        move[1] += camera->front[1] * CAMERA_SPEED;
-        move[2] += camera->front[2] * CAMERA_SPEED;
+        camera->pos[0] += camera->current_x_direction * CAMERA_SPEED;
+        camera->pos[2] += camera->current_y_direction * CAMERA_SPEED;
     }
     if(window_is_key_pressed(window, MC_A)) {
-        glm_cross(camera->front, camera->up, move);
-        glm_normalize(move);
-        move[0] *= CAMERA_SPEED;
-        move[1] *= CAMERA_SPEED;
-        move[2] *= CAMERA_SPEED;
+        vec3 right = {0.0f, 0.0f, 0.0f};
+        glm_cross(camera->front, world_up, right);
+        glm_normalize(right);
+        camera->pos[0] += right[0] * CAMERA_SPEED;
+        camera->pos[2] += right[2] * CAMERA_SPEED;
     }
     if(window_is_key_pressed(window, MC_D)) {
-        glm_cross(camera->front, camera->up, move);
-        glm_normalize(move);
-        move[0] *= -CAMERA_SPEED;
-        move[1] *= -CAMERA_SPEED;
-        move[2] *= -CAMERA_SPEED;
+        vec3 right = {0.0f, 0.0f, 0.0f};
+        glm_cross(camera->front, world_up, right);
+        glm_normalize(right);
+        camera->pos[0] -= right[0] * CAMERA_SPEED;
+        camera->pos[2] -= right[2] * CAMERA_SPEED;
     }
-    glm_vec3_add(camera->pos, move, camera->pos);
 }
 
 void buffers_create(unsigned int* vertex_buffer_id, unsigned int* color_buffer_id, unsigned int* vertex_array_id, unsigned int* element_buffer_id)
@@ -136,11 +146,15 @@ void gl_update_mouse_delta(const MouseMoveEvent* event, void* user_data_ptr)
         camera->pitch = -89.0f;
     }
 
-    vec3 direction;
-    direction[0] = cos(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
-    direction[1] = sin(glm_rad(camera->pitch));
-    direction[2] = sin(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
-    memcpy(camera->front, direction, sizeof(direction));
+    float yaw_sin = sin(glm_rad(camera->yaw));
+    float yaw_cos = cos(glm_rad(camera->yaw));
+    float pitch_cos = cos(glm_rad(camera->pitch));
+
+    camera->current_x_direction = yaw_cos;
+    camera->current_y_direction = yaw_sin;
+    camera->front[0] = yaw_cos * pitch_cos;
+    camera->front[1] = sin(glm_rad(camera->pitch));
+    camera->front[2] = yaw_sin * pitch_cos;
 
     glm_normalize(camera->front);
 }
