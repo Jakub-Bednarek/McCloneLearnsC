@@ -89,7 +89,7 @@ void camera_update_input(Camera* camera, SimpleWindow* window)
     }
 }
 
-void buffers_create(unsigned int* vertex_buffer_id, unsigned int* color_buffer_id, unsigned int* vertex_array_id, unsigned int* element_buffer_id)
+void buffers_create(unsigned int* vertex_buffer_id, unsigned int* texture_buffer_id, unsigned int* vertex_array_id, unsigned int* element_buffer_id)
 {
     glGenVertexArrays(1, vertex_array_id);
     glGenBuffers(1, vertex_buffer_id);
@@ -101,15 +101,15 @@ void buffers_create(unsigned int* vertex_buffer_id, unsigned int* color_buffer_i
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glGenBuffers(1, color_buffer_id);
-    glBindBuffer(GL_ARRAY_BUFFER, *color_buffer_id);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_colors), cube_colors, GL_STATIC_DRAW);
+    glGenBuffers(1, texture_buffer_id);
+    glBindBuffer(GL_ARRAY_BUFFER, *texture_buffer_id);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texture_coordinates), texture_coordinates, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
 }
 
-void gl_clean_up(Shader shader, unsigned int* vertex_buffer_id, unsigned int* color_buffer_id, unsigned int* vertex_array_id, unsigned int* element_buffer_id)
+void gl_clean_up(Shader shader, unsigned int* vertex_buffer_id, unsigned int* texture_buffer, unsigned int* vertex_array_id, unsigned int* element_buffer_id)
 {
     glDeleteVertexArrays(1, vertex_array_id);
     glDeleteBuffers(1, vertex_buffer_id);
@@ -227,7 +227,7 @@ void shader_upload_data(Shader shader, mat4 model, mat4 view, mat4 proj)
     glUniformMatrix4fv(uniform_location, 1, GL_FALSE, proj[0]);
 }
 
-void render(SimpleWindow* window, Camera* camera, SimpleTimer* timer, Shader shader, unsigned int vertex_array_id, unsigned int element_buffer_id)
+void render(SimpleWindow* window, Camera* camera, SimpleTimer* timer, Shader shader, Texture texture, unsigned int vertex_array_id, unsigned int element_buffer_id)
 {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -238,14 +238,14 @@ void render(SimpleWindow* window, Camera* camera, SimpleTimer* timer, Shader sha
     glm_mat4_identity(model);
     mat4 proj;
     glm_mat4_identity(proj);
-    glm_rotate(model, glm_rad(45), (vec3) {1.0f, 0.0f, 0.0f});
-    glm_translate(model, (vec3) {-4.0f, 5.0f, 0.0f});
-    glm_perspective_rh_no(glm_rad(45), 1920.0f / 1080.0f, 0.1f, 100.0f, proj);
+    glm_translate(model, (vec3) {-4.0f, -6.0f, 0.0f});
+    glm_perspective_rh_no(glm_rad(90), 1920.0f / 1080.0f, 0.1f, 100.0f, proj);
     camera_update_input(camera, window);
     camera_recalculate_mat(camera);
 
     static size_t blocks_x = 100;
     static size_t blocks_z = 100;
+    glBindTexture(GL_TEXTURE_2D, texture.texture_id);
     glBindVertexArray(vertex_array_id);
     for(size_t i = 0; i < blocks_z; i++)
     {
@@ -255,6 +255,6 @@ void render(SimpleWindow* window, Camera* camera, SimpleTimer* timer, Shader sha
             shader_upload_data(shader, model, camera->view, proj);
             glDrawArrays(GL_TRIANGLES, 0, 12*3);
         }
-        glm_translate(model, (vec3) {-(float)(blocks_x), -1.0f, 0.0f});
+        glm_translate(model, (vec3) {-(float)(blocks_x), 0.0f, -1.0f});
     }
 }

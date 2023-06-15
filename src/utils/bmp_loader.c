@@ -43,7 +43,7 @@ Bitmap* load_bmp(const char* path)
 {
     FILE* file_ptr = fopen(path, "r");
     if(file_ptr == NULL) {
-        printf("ERROR: Failed to open file: %s", path);
+        printf("ERROR: Failed to open file: %s\n", path);
         return NULL;
     }
 
@@ -86,6 +86,8 @@ Bitmap* load_bmp(const char* path)
         return NULL;
     }
 
+    bmp->width = bitmap_info_header.width;
+    bmp->height = bitmap_info_header.height;
     bmp->pixels = pixels;
     return bmp;
 }

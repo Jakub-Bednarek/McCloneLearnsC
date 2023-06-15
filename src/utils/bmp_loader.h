@@ -2,6 +2,8 @@
 #define BMP_READER_HPP
 
 typedef struct {
+    unsigned int width;
+    unsigned int height;
     char* pixels;
 } Bitmap;
 

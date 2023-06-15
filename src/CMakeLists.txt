@@ -16,11 +16,13 @@ set(CORE_SOURCES
 
 set(GRAPHICS_HEADERS
     graphics/renderer.h
-    graphics/window.h)
+    graphics/window.h
+    graphics/texture.h)
 
 set(GRAPHICS_SOURCES
     graphics/renderer.c
-    graphics/window.c)
+    graphics/window.c
+    graphics/texture.c)
 
 set(WORLD_HEADERS
     world/world.h)

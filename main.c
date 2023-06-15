@@ -1,5 +1,6 @@
 #include "graphics/window.h"
 #include "graphics/renderer.h"
+#include "graphics/texture.h"
 #include "core/timer.h"
 #include "utils/bmp_loader.h"
 
@@ -27,10 +28,6 @@ int main()
     SimpleWindow* simple_window = window_create(1920, 1080);
     Camera camera = camera_create();
 
-    Bitmap* bmp = load_bmp("res/textures/test.bmp");
-    Bitmap* bmp2 = load_bmp("res/textures/multi.bmp");
-    free_bmp(bmp);
-
     if(simple_window->error_code != MC_ERROR_NONE) {
         printf("SimpleWindow creation failure with errorCode: %d\n", simple_window->error_code);
         window_destroy(simple_window);
@@ -42,10 +39,12 @@ int main()
 
     Shader shader = shader_create();
     unsigned int vbo;
-    unsigned int cbo;
+    unsigned int texture_buffer;
     unsigned int vao;
     unsigned int ebo;
-    buffers_create(&vbo, &cbo, &vao, &ebo);
+    buffers_create(&vbo, &texture_buffer, &vao, &ebo);
+
+    Texture texture_atlas = create_texture("res/textures/dirt.bmp");
 
     while(true) {
         simple_timer_update(&simple_timer);
@@ -53,11 +52,11 @@ int main()
             break;
         }
         tick(simple_window, &simple_timer);
-        render(simple_window, &camera, &simple_timer, shader, vao, ebo);
+        render(simple_window, &camera, &simple_timer, shader, texture_atlas, vao, ebo);
         window_swap_buffers(simple_window);
     }
 
-    gl_clean_up(shader, &vbo, &cbo, &vao, &ebo);
+    gl_clean_up(shader, &vbo, &texture_buffer, &vao, &ebo);
     window_destroy(simple_window);
 
     return 0;

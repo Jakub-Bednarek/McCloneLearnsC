@@ -98,7 +98,16 @@ void window_handle_mouse_move_event(SimpleWindow* window, const XMotionEvent* mo
     event.delta_x = event.x - window->mouse_x_center;
     event.delta_y = event.y - window->mouse_y_center;
 
-    XWarpPointer(window->display, window->main_window, window->main_window, 0, 0, window->width, window->height, window->mouse_x_center, window->mouse_y_center);
+    XWarpPointer(window->display,
+        window->main_window,
+        window->main_window,
+        0,
+        0,
+        window->width,
+        window->height,
+        window->mouse_x_center,
+        window->mouse_y_center
+    );
     window->mouse_move_callback.callback(&event, window->mouse_move_callback.user_data_ptr);
 }
 
