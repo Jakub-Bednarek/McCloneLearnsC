@@ -1,6 +1,7 @@
 #include "graphics/window.h"
 #include "graphics/renderer.h"
 #include "core/timer.h"
+#include "utils/bmp_loader.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,6 +26,10 @@ int main()
     SimpleTimer simple_timer = simple_timer_create();
     SimpleWindow* simple_window = window_create(1920, 1080);
     Camera camera = camera_create();
+
+    Bitmap* bmp = load_bmp("res/textures/test.bmp");
+    Bitmap* bmp2 = load_bmp("res/textures/multi.bmp");
+    free_bmp(bmp);
 
     if(simple_window->error_code != MC_ERROR_NONE) {
         printf("SimpleWindow creation failure with errorCode: %d\n", simple_window->error_code);
