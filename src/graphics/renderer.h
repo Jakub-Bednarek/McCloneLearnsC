@@ -5,6 +5,7 @@
 #include "window.h"
 #include "texture.h"
 #include "core/input.h"
+#include "texture_atlas.h"
 
 #include <GL/gl.h>
 #include <GL/glx.h>
@@ -43,6 +44,6 @@ extern unsigned int shader_compile(unsigned int, const char*);
 extern unsigned int shader_program_create(unsigned int, unsigned int);
 extern void shader_upload_data(Shader, mat4, mat4, mat4);
 
-void render(SimpleWindow*, Camera*, SimpleTimer*, Shader, Texture, unsigned int, unsigned int);
+void render(SimpleWindow*, Camera*, SimpleTimer*, Shader, TextureAtlas*, unsigned int, unsigned int);
 
 #endif // RENDERER_H

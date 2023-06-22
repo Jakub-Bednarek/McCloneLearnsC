@@ -107,6 +107,8 @@ void buffers_create(unsigned int* vertex_buffer_id, unsigned int* texture_buffer
 
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void gl_clean_up(Shader shader, unsigned int* vertex_buffer_id, unsigned int* texture_buffer, unsigned int* vertex_array_id, unsigned int* element_buffer_id)
@@ -227,7 +229,7 @@ void shader_upload_data(Shader shader, mat4 model, mat4 view, mat4 proj)
     glUniformMatrix4fv(uniform_location, 1, GL_FALSE, proj[0]);
 }
 
-void render(SimpleWindow* window, Camera* camera, SimpleTimer* timer, Shader shader, Texture texture, unsigned int vertex_array_id, unsigned int element_buffer_id)
+void render(SimpleWindow* window, Camera* camera, SimpleTimer* timer, Shader shader, TextureAtlas* texture_atlas, unsigned int vertex_array_id, unsigned int element_buffer_id)
 {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -245,7 +247,7 @@ void render(SimpleWindow* window, Camera* camera, SimpleTimer* timer, Shader sha
 
     static size_t blocks_x = 100;
     static size_t blocks_z = 100;
-    glBindTexture(GL_TEXTURE_2D, texture.texture_id);
+    glBindTexture(GL_TEXTURE_2D, texture_atlas->texture_id);
     glBindVertexArray(vertex_array_id);
     for(size_t i = 0; i < blocks_z; i++)
     {

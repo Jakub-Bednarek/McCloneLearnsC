@@ -7,7 +7,7 @@ typedef struct {
     char* pixels;
 } Bitmap;
 
-extern Bitmap* load_bmp(const char* path);
-extern void free_bmp(Bitmap*);
+extern Bitmap* bitmap_load(const char*);
+extern void bitmap_free(Bitmap*);
 
 #endif // BMP_READER_HPP% 

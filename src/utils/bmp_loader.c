@@ -39,7 +39,7 @@ typedef struct
     uint8_t blue;
 } Pixel __attribute__((__packed__));
 
-Bitmap* load_bmp(const char* path)
+Bitmap* bitmap_load(const char* path)
 {
     FILE* file_ptr = fopen(path, "r");
     if(file_ptr == NULL) {
@@ -92,7 +92,7 @@ Bitmap* load_bmp(const char* path)
     return bmp;
 }
 
-void free_bmp(Bitmap* bitmap)
+void bitmap_free(Bitmap* bitmap)
 {
     free(bitmap->pixels);
     free(bitmap);

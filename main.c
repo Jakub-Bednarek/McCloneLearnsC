@@ -1,6 +1,7 @@
 #include "graphics/window.h"
 #include "graphics/renderer.h"
 #include "graphics/texture.h"
+#include "graphics/texture_atlas.h"
 #include "core/timer.h"
 #include "utils/bmp_loader.h"
 
@@ -17,7 +18,6 @@ void tick(SimpleWindow* window, SimpleTimer* timer)
     total_delta += timer->delta_in_micro;
     while(total_delta > TICKS_THRESHOLD)
     {
-        window_set_title_to_current_fps(window, timer->fps);
         total_delta -= TICKS_THRESHOLD;
     }
 }
@@ -27,6 +27,12 @@ int main()
     SimpleTimer simple_timer = simple_timer_create();
     SimpleWindow* simple_window = window_create(1920, 1080);
     Camera camera = camera_create();
+
+    const char* textures_to_load[4] = {"res/textures/dirt.bmp", "res/textures/sand.bmp", "res/textures/stone.bmp", "res/textures/wood.bmp"};
+    TextureAtlas texture_atlas = texture_atlas_create(16, 16, textures_to_load, 4);
+    if(texture_atlas.error_code != MC_ERROR_NONE) {
+        printf("ERROR WHILE LOADING TEXTURE ATLAS: %d\n", texture_atlas.error_code);
+    }
 
     if(simple_window->error_code != MC_ERROR_NONE) {
         printf("SimpleWindow creation failure with errorCode: %d\n", simple_window->error_code);
@@ -44,15 +50,13 @@ int main()
     unsigned int ebo;
     buffers_create(&vbo, &texture_buffer, &vao, &ebo);
 
-    Texture texture_atlas = create_texture("res/textures/dirt.bmp");
-
     while(true) {
         simple_timer_update(&simple_timer);
         if(!window_dispatch_events(simple_window)) {
             break;
         }
         tick(simple_window, &simple_timer);
-        render(simple_window, &camera, &simple_timer, shader, texture_atlas, vao, ebo);
+        render(simple_window, &camera, &simple_timer, shader, &texture_atlas, vao, ebo);
         window_swap_buffers(simple_window);
     }
 
