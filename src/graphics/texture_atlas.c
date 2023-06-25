@@ -17,7 +17,7 @@ bool texture_atlas_upload_sub_texture(TextureAtlas* texture_atlas, const char* t
         return false;
     }
 
-    glTexSubImage2D(GL_TEXTURE_2D,
+    GL_CALL(glTexSubImage2D(GL_TEXTURE_2D,
                  0,
                  texture_atlas->current_x_offset,
                  texture_atlas->current_y_offset,
@@ -25,9 +25,8 @@ bool texture_atlas_upload_sub_texture(TextureAtlas* texture_atlas, const char* t
                  texture_atlas->single_texture_height,
                  GL_RGB,
                  GL_UNSIGNED_BYTE,
-                 bmp->pixels);
+                 bmp->pixels));
 
-    printf("OPENGL ERROR: %d\n", glGetError());
     bitmap_free(bmp);
     return true;
 }
@@ -64,18 +63,18 @@ TextureAtlas texture_atlas_create(const unsigned int texture_width, const unsign
     texture_atlas.current_x_offset = 0;
     texture_atlas.current_y_offset = 0;
 
-    glGenTextures(1, &texture_atlas.texture_id);
-    glBindTexture(GL_TEXTURE_2D, texture_atlas.texture_id);
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB8, 32, 32);
+    GL_CALL(glGenTextures(1, &texture_atlas.texture_id));
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, texture_atlas.texture_id));
+    GL_CALL(glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB8, 32, 32));
     
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST));
 
     static float boarder_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, boarder_color);
+    GL_CALL(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, boarder_color));
 
     for(size_t i = 0; i < number_of_textures; i++) {
         if(texture_atlas_upload_sub_texture(&texture_atlas, textures_paths[i])) {

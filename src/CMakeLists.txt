@@ -12,7 +12,8 @@ set(CORE_HEADERS
 
 set(CORE_SOURCES
     core/input.c
-    core/timer.c)
+    core/timer.c
+    core/error.c)
 
 set(GRAPHICS_HEADERS
     graphics/renderer.h
