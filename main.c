@@ -4,6 +4,7 @@
 #include "graphics/texture_atlas.h"
 #include "core/timer.h"
 #include "utils/bmp_loader.h"
+#include "core/ecs/entity.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,6 +25,8 @@ void tick(SimpleWindow* window, SimpleTimer* timer)
 
 int main()
 {
+    entity_manager_initialize();
+
     SimpleTimer simple_timer = simple_timer_create();
     SimpleWindow* simple_window = window_create(1920, 1080);
     Camera camera = camera_create();

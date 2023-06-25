@@ -8,12 +8,14 @@ set(INCLUDE_DIRS
 set(CORE_HEADERS
     core/error.h
     core/input.h
-    core/timer.h)
+    core/timer.h
+    core/ecs/entity.h)
 
 set(CORE_SOURCES
     core/input.c
     core/timer.c
-    core/error.c)
+    core/error.c
+    core/ecs/entity.c)
 
 set(GRAPHICS_HEADERS
     graphics/renderer.h
