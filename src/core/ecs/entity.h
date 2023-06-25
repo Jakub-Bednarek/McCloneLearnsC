@@ -11,6 +11,5 @@ typedef int32_t EntityId;
 extern void entity_manager_initialize();
 extern EntityId entity_get_next_free_id();
 extern int32_t entity_free();
-extern void test_entities();
 
 #endif // ENTITY_H
