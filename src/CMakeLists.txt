@@ -10,14 +10,16 @@ set(CORE_HEADERS
     core/input.h
     core/timer.h
     core/ecs/entity.h
-    core/ecs/component.h)
+    core/ecs/component.h
+    core/allocators/pool_allocator.h)
 
 set(CORE_SOURCES
     core/input.c
     core/timer.c
     core/error.c
     core/ecs/entity.c
-    core/ecs/component.c)
+    core/ecs/component.c
+    core/allocators/pool_allocator.c)
 
 set(GRAPHICS_HEADERS
     graphics/renderer.h

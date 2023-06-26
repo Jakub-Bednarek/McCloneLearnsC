@@ -11,8 +11,9 @@
 #define COMPONENT_SIZE_INVALID 5
 #define COMPONENTS_NUMBER_INVALID 6
 
-extern void components_manager_initialize();
+extern void components_manager_initialize(void);
 extern int32_t component_register(const char*, size_t, size_t);
 extern int32_t component_add_to_entity(const char*, void*, size_t);
+extern void components_test();
 
 #endif // COMPONENT_H
