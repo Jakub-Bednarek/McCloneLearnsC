@@ -12,7 +12,7 @@ int32_t pool_allocator_alloc(PoolAllocator *pool_allocator, const size_t element
 
     Chunk *chunk_begin = calloc(number_of_elements, element_size);
     if (chunk_begin == NULL) {
-        errno = MEMORY_ALLOCATION_FAILURE;
+        errno = POOL_MEMORY_ALLOCATION_FAILURE;
         return -1;
     }
 

@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #define ELEMENT_SIZE_TOO_SMALL 1
-#define MEMORY_ALLOCATION_FAILURE 2
+#define POOL_MEMORY_ALLOCATION_FAILURE 2
 #define MAXIMUM_NUMBER_OF_ELEMENTS_ALLOCATED 3
 
 typedef struct Chunk Chunk;

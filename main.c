@@ -24,6 +24,11 @@ void tick(SimpleWindow* window, SimpleTimer* timer)
     }
 }
 
+// int main()
+// {
+//     components_test();
+// }
+
 int main()
 {
     entity_manager_initialize();
