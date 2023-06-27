@@ -106,34 +106,43 @@ void* component_get_for_entity(const char* name, const EntityId entity)
     return &component_array->components_storage[0]->component_data;
 }
 
-// typedef struct {
-//     unsigned int texture_id;
-//     float left;
-//     float right;
-//     float top;
-//     float bottom;
-// } Texture;
+typedef struct {
+    unsigned int texture_id;
+    float left;
+    float right;
+    float top;
+    float bottom;
+} Texture;
 
-// void components_test() { 
-//     components_manager_initialize();
-//     if(component_register("texture", sizeof(Texture), 100) == -1) {
-//         printf("Error\n");
-//     }
-//     EntityId e = 5;
-//     Texture* t = NULL;
-//     if(component_add_to_entity("texture", e, (void**)(&t), sizeof(Texture)) == -1) {
-//         printf("Error adding\n");
-//     }
-//     printf("Add: 0x%x\n", t);
-//     t->bottom = 0.5;
-//     t->top = 0.4;
-//     t->left = 0.3;
-//     t->right = 0.2;
-//     printf("Texture address: 0x%x, data: bottom: %f, top: %f, left: %f, right: %f\n", t, t->bottom, t->top, t->left, t->right);
-//     Texture* my_tex = component_get_for_entity("ab", 0);
-//     printf("Addr: 0x%x\n", my_tex);
-//     printf("%f\n", my_tex->top);
-//     my_tex->top = 0.583f;
-//     printf("NEW T: %f\n", t->top);
-//     // printf("Get component: 0x%x, data: bottom: %f, top: %f, left: %f, right: %f\n", my_tex, my_tex->bottom, my_tex->top, my_tex->left, my_tex->right);
-// }
+void components_test() { 
+    components_manager_initialize();
+
+    if(component_register("texture", sizeof(Texture), 100) == -1) {
+        printf("Error while adding texture component\n");
+        return;
+    }
+
+    EntityId dummyEntityId = 5;
+    Texture* registeredTexture = NULL;
+    if(component_add_to_entity("texture", dummyEntityId, (void**)(&registeredTexture), sizeof(Texture)) == -1) {
+        printf("Error adding\n");
+    }
+
+    printf("registeredTexture address: 0x%x\n", registeredTexture);
+
+    registeredTexture->bottom = 0.5;
+    registeredTexture->top = 0.4;
+    registeredTexture->left = 0.3;
+    registeredTexture->right = 0.2;
+
+    Texture* texture_from_get_call = component_get_for_entity("ab", 0);
+    printf("texture_from_get_call address: 0x%x, bottom: %f, top: %f, left: %f, right: %f\n", 
+        texture_from_get_call,
+        texture_from_get_call->bottom,
+        texture_from_get_call->top,
+        texture_from_get_call->left,
+        texture_from_get_call->right);
+
+    texture_from_get_call->top = 0.583f;
+    printf("Modified texture_from_get_call top value: %f\n", texture_from_get_call->top);
+}
