@@ -31,6 +31,14 @@ void components_manager_initialize()
     g_components_manager.next_free_component_index = 0;
 }
 
+void components_manager_unitialize()
+{
+    for(size_t i = 0; i < g_components_manager.next_free_component_index; i++) {
+        g_components_manager.registered_components[i].components_storage = NULL;
+        pool_allocator_free(&g_components_manager.registered_components[i].component_allocator);
+    }
+}
+
 int32_t component_register(const char* name, const size_t size, const size_t number_of_elements)
 {
     if(size <= 0) {
@@ -73,12 +81,38 @@ int32_t component_register(const char* name, const size_t size, const size_t num
     return 0;
 }
 
-int32_t component_add_to_entity(const char* name, const EntityId entity, void** component_data_ptr, const size_t size)
+int32_t component_unregister(const char* name)
 {
     int32_t found_component_index = -1;
     for(size_t i = 0; i < g_components_manager.next_free_component_index; i++) {
         if(strcmp(g_components_manager.registered_components[i].name, name) == 0) {
             found_component_index = i;
+            break;
+        }
+    }
+
+    if(found_component_index == -1) {
+        errno = COMPONENT_NOT_FOUND;
+        return -1;
+    }
+
+    pool_allocator_free(&g_components_manager.registered_components[found_component_index].component_allocator);
+    for(size_t i = found_component_index; i < g_components_manager.next_free_component_index - 1; i++) {
+        // No need for deep copy considering current implementation of PoolAllocator
+        g_components_manager.registered_components[i] = g_components_manager.registered_components[i + 1];
+    }
+    --g_components_manager.next_free_component_index;
+
+    return 0;
+}
+
+int32_t component_add_to_entity(const char* name, const EntityId entity, void** component_data_ptr)
+{
+    int32_t found_component_index = -1;
+    for(size_t i = 0; i < g_components_manager.next_free_component_index; i++) {
+        if(strcmp(g_components_manager.registered_components[i].name, name) == 0) {
+            found_component_index = i;
+            break;
         }
     }
 
@@ -88,61 +122,68 @@ int32_t component_add_to_entity(const char* name, const EntityId entity, void** 
     }
 
     ComponentArray* component_array = &g_components_manager.registered_components[found_component_index];
-    printf("ComponentArray ptr: 0x%x\n", component_array);
+    for(size_t i = 0; i < component_array->number_of_allocated_components; i++) {
+        if(component_array->components_storage[i]->entity == entity) {
+            errno = COMPONENT_ALREADY_ADDED_TO_ENTITY;
+            return -1;
+        }
+    }
+
     ComponentMapping* allocated_component = pool_allocator_get_new_element(&component_array->component_allocator);
-    printf("ComponentMapping ptr: 0x%x\n", allocated_component);
     allocated_component->entity = entity;
     component_array->components_storage[component_array->number_of_allocated_components++] = allocated_component;
 
-    printf("ComponentMapping: 0x%x, component_dat: 0x%x\n", allocated_component, &allocated_component->component_data);
-    *component_data_ptr = &allocated_component->component_data;
+    if(component_data_ptr != NULL) {
+        *component_data_ptr = &allocated_component->component_data;
+    }
 
     return 0;
 }
 
-void* component_get_for_entity(const char* name, const EntityId entity)
+void* component_get_from_entity(const char* name, const EntityId entity)
 {
-    ComponentArray* component_array = &g_components_manager.registered_components[0];
-    return &component_array->components_storage[0]->component_data;
+    ComponentArray* component_array = NULL;
+    for(size_t i = 0; i < g_components_manager.next_free_component_index; ++i) {
+        if(strcmp(g_components_manager.registered_components[i].name, name) == 0) {
+            component_array = &g_components_manager.registered_components[i];
+        }
+    }
+
+    if(component_array == NULL) {
+        errno = COMPONENT_NOT_FOUND;
+        return NULL;
+    }
+
+    for(size_t i = 0; i < component_array->number_of_allocated_components; i++) {
+        if(component_array->components_storage[i]->entity == entity) {
+            return &component_array->components_storage[i]->component_data;
+        }
+    }
+    
+    errno = COMPONENT_NOT_ASSIGNED_TO_ENTITY;
+    return NULL;
 }
 
-typedef struct {
-    unsigned int texture_id;
-    float left;
-    float right;
-    float top;
-    float bottom;
-} Texture;
-
-void components_test() { 
-    components_manager_initialize();
-
-    if(component_register("texture", sizeof(Texture), 100) == -1) {
-        printf("Error while adding texture component\n");
-        return;
+int32_t component_remove_from_entity(const char* name, const EntityId entity)
+{
+    ComponentArray* component_array = NULL;
+    for(size_t i = 0; i < g_components_manager.next_free_component_index; ++i) {
+        if(strcmp(g_components_manager.registered_components[i].name, name) == 0) {
+            component_array = &g_components_manager.registered_components[i];
+        }
     }
 
-    EntityId dummyEntityId = 5;
-    Texture* registeredTexture = NULL;
-    if(component_add_to_entity("texture", dummyEntityId, (void**)(&registeredTexture), sizeof(Texture)) == -1) {
-        printf("Error adding\n");
+    if(component_array == NULL) {
+        errno = COMPONENT_NOT_FOUND;
+        return NULL;
     }
 
-    printf("registeredTexture address: 0x%x\n", registeredTexture);
+    for(size_t i = 0; i < component_array->number_of_allocated_components; i++) {
+        if(component_array->components_storage[i]->entity == entity) {
+            pool_allocator_free_element(&component_array->component_allocator, (void*)(component_array->components_storage[i]));
+        }
+    }
 
-    registeredTexture->bottom = 0.5;
-    registeredTexture->top = 0.4;
-    registeredTexture->left = 0.3;
-    registeredTexture->right = 0.2;
-
-    Texture* texture_from_get_call = component_get_for_entity("ab", 0);
-    printf("texture_from_get_call address: 0x%x, bottom: %f, top: %f, left: %f, right: %f\n", 
-        texture_from_get_call,
-        texture_from_get_call->bottom,
-        texture_from_get_call->top,
-        texture_from_get_call->left,
-        texture_from_get_call->right);
-
-    texture_from_get_call->top = 0.583f;
-    printf("Modified texture_from_get_call top value: %f\n", texture_from_get_call->top);
+    errno = COMPONENT_NOT_ASSIGNED_TO_ENTITY;
+    return -1;
 }
