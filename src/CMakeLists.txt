@@ -11,6 +11,7 @@ set(CORE_HEADERS
     core/timer.h
     core/ecs/entity.h
     core/ecs/component.h
+    core/ecs/system.h
     core/allocators/pool_allocator.h)
 
 set(CORE_SOURCES
@@ -19,6 +20,7 @@ set(CORE_SOURCES
     core/error.c
     core/ecs/entity.c
     core/ecs/component.c
+    core/ecs/system.c
     core/allocators/pool_allocator.c)
 
 set(GRAPHICS_HEADERS
