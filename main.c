@@ -27,9 +27,6 @@ void tick(SimpleWindow* window, SimpleTimer* timer)
 
 int main()
 {
-    entity_manager_initialize();
-    components_manager_initialize();
-
     SimpleTimer simple_timer = simple_timer_create();
     SimpleWindow* simple_window = window_create(1920, 1080);
     Camera camera = camera_create();

@@ -1,45 +1,33 @@
 #include "component.h"
-#include "core/allocators/pool_allocator.h"
 
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
 
-#define MAX_NUMBER_OF_COMPONENTS_TYPES 100
-#define MAX_NUMBER_OF_COMPONENTS_IN_ARRAY 10000
-
-typedef struct {
-    EntityId entity;
-    void* component_data;
-} ComponentMapping;
-
-typedef struct {
-    const char* name;
-    size_t number_of_allocated_components;
-    size_t max_number_of_elements;
-    ComponentMapping** components_storage;
-    PoolAllocator component_allocator;
-} ComponentArray;
-
-struct ComponentsManager{
-    size_t next_free_component_index;
-    ComponentArray registered_components[MAX_NUMBER_OF_COMPONENTS_TYPES];
-} g_components_manager;
-
-void components_manager_initialize()
+void component_manager_initialize(ComponentManager* component_manager)
 {
-    g_components_manager.next_free_component_index = 0;
+    component_manager->next_free_component_index = 0;
+    component_manager->next_signature = 0b1;
 }
 
-void components_manager_unitialize()
+void component_manager_unitialize(ComponentManager* component_manager)
 {
-    for(size_t i = 0; i < g_components_manager.next_free_component_index; i++) {
-        g_components_manager.registered_components[i].components_storage = NULL;
-        pool_allocator_free(&g_components_manager.registered_components[i].component_allocator);
+    for(size_t i = 0; i < component_manager->next_free_component_index; i++) {
+        component_manager->registered_components[i].components_storage = NULL;
+        pool_allocator_free(&component_manager->registered_components[i].component_allocator);
     }
 }
 
-int32_t component_register(const char* name, const size_t size, const size_t number_of_elements)
+Signature component_manager_get_next_signature(ComponentManager* component_manager)
+{
+    Signature next_signature = component_manager->next_signature;
+    component_manager->next_signature = component_manager->next_signature << 1;
+    printf("Next sig: %d\n", component_manager->next_signature);
+
+    return next_signature;
+}
+
+int32_t component_register(ComponentManager* component_manager, const char* name, const size_t size, const size_t number_of_elements)
 {
     if(size <= 0) {
         errno = COMPONENT_SIZE_INVALID;
@@ -51,8 +39,8 @@ int32_t component_register(const char* name, const size_t size, const size_t num
         return -1;
     }
 
-    for(size_t i = 0; i < g_components_manager.next_free_component_index; i++) {
-        if(strcmp(g_components_manager.registered_components[i].name, name) == 0) {
+    for(size_t i = 0; i < component_manager->next_free_component_index; i++) {
+        if(strcmp(component_manager->registered_components[i].name, name) == 0) {
             errno = COMPONENT_NAME_ALREADY_REGISTERED;
             return -1;
         }
@@ -69,23 +57,24 @@ int32_t component_register(const char* name, const size_t size, const size_t num
         return -1;
     }
 
-    ComponentArray* component = &g_components_manager.registered_components[g_components_manager.next_free_component_index];
+    ComponentArray* component = &component_manager->registered_components[component_manager->next_free_component_index];
     component->component_allocator = allocator;
     component->components_storage = component_mapping;
     component->name = name;
+    component->signature = component_manager_get_next_signature(component_manager);
     component->number_of_allocated_components = 0;
     component->max_number_of_elements = number_of_elements;
 
-    ++g_components_manager.next_free_component_index;
+    ++component_manager->next_free_component_index;
 
     return 0;
 }
 
-int32_t component_unregister(const char* name)
+int32_t component_unregister(ComponentManager* component_manager, const char* name)
 {
     int32_t found_component_index = -1;
-    for(size_t i = 0; i < g_components_manager.next_free_component_index; i++) {
-        if(strcmp(g_components_manager.registered_components[i].name, name) == 0) {
+    for(size_t i = 0; i < component_manager->next_free_component_index; i++) {
+        if(strcmp(component_manager->registered_components[i].name, name) == 0) {
             found_component_index = i;
             break;
         }
@@ -96,21 +85,21 @@ int32_t component_unregister(const char* name)
         return -1;
     }
 
-    pool_allocator_free(&g_components_manager.registered_components[found_component_index].component_allocator);
-    for(size_t i = found_component_index; i < g_components_manager.next_free_component_index - 1; i++) {
+    pool_allocator_free(&component_manager->registered_components[found_component_index].component_allocator);
+    for(size_t i = found_component_index; i < component_manager->next_free_component_index - 1; i++) {
         // No need for deep copy considering current implementation of PoolAllocator
-        g_components_manager.registered_components[i] = g_components_manager.registered_components[i + 1];
+        component_manager->registered_components[i] = component_manager->registered_components[i + 1];
     }
-    --g_components_manager.next_free_component_index;
+    --component_manager->next_free_component_index;
 
     return 0;
 }
 
-int32_t component_add_to_entity(const char* name, const EntityId entity, void** component_data_ptr)
+int32_t component_add_to_entity(ComponentManager* component_manager, const char* name, const EntityId entity, void** component_data_ptr, Signature* signature)
 {
     int32_t found_component_index = -1;
-    for(size_t i = 0; i < g_components_manager.next_free_component_index; i++) {
-        if(strcmp(g_components_manager.registered_components[i].name, name) == 0) {
+    for(size_t i = 0; i < component_manager->next_free_component_index; i++) {
+        if(strcmp(component_manager->registered_components[i].name, name) == 0) {
             found_component_index = i;
             break;
         }
@@ -121,7 +110,7 @@ int32_t component_add_to_entity(const char* name, const EntityId entity, void** 
         return -1;
     }
 
-    ComponentArray* component_array = &g_components_manager.registered_components[found_component_index];
+    ComponentArray* component_array = &component_manager->registered_components[found_component_index];
     for(size_t i = 0; i < component_array->number_of_allocated_components; i++) {
         if(component_array->components_storage[i]->entity == entity) {
             errno = COMPONENT_ALREADY_ADDED_TO_ENTITY;
@@ -132,6 +121,7 @@ int32_t component_add_to_entity(const char* name, const EntityId entity, void** 
     ComponentMapping* allocated_component = pool_allocator_get_new_element(&component_array->component_allocator);
     allocated_component->entity = entity;
     component_array->components_storage[component_array->number_of_allocated_components++] = allocated_component;
+    *signature = component_array->signature;
 
     if(component_data_ptr != NULL) {
         *component_data_ptr = &allocated_component->component_data;
@@ -140,12 +130,12 @@ int32_t component_add_to_entity(const char* name, const EntityId entity, void** 
     return 0;
 }
 
-void* component_get_from_entity(const char* name, const EntityId entity)
+void* component_get_from_entity(ComponentManager* component_manager, const char* name, const EntityId entity)
 {
     ComponentArray* component_array = NULL;
-    for(size_t i = 0; i < g_components_manager.next_free_component_index; ++i) {
-        if(strcmp(g_components_manager.registered_components[i].name, name) == 0) {
-            component_array = &g_components_manager.registered_components[i];
+    for(size_t i = 0; i < component_manager->next_free_component_index; ++i) {
+        if(strcmp(component_manager->registered_components[i].name, name) == 0) {
+            component_array = &component_manager->registered_components[i];
         }
     }
 
@@ -164,20 +154,21 @@ void* component_get_from_entity(const char* name, const EntityId entity)
     return NULL;
 }
 
-int32_t component_remove_from_entity(const char* name, const EntityId entity)
+int32_t component_remove_from_entity(ComponentManager* component_manager, const char* name, const EntityId entity, Signature* signature)
 {
     ComponentArray* component_array = NULL;
-    for(size_t i = 0; i < g_components_manager.next_free_component_index; ++i) {
-        if(strcmp(g_components_manager.registered_components[i].name, name) == 0) {
-            component_array = &g_components_manager.registered_components[i];
+    for(size_t i = 0; i < component_manager->next_free_component_index; ++i) {
+        if(strcmp(component_manager->registered_components[i].name, name) == 0) {
+            component_array = &component_manager->registered_components[i];
         }
     }
 
     if(component_array == NULL) {
         errno = COMPONENT_NOT_FOUND;
-        return NULL;
+        return -1;
     }
 
+    *signature = component_array->signature;
     for(size_t i = 0; i < component_array->number_of_allocated_components; i++) {
         if(component_array->components_storage[i]->entity == entity) {
             pool_allocator_free_element(&component_array->component_allocator, (void*)(component_array->components_storage[i]));

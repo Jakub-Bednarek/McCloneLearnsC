@@ -21,11 +21,16 @@ typedef struct {
     void (*on_update)(double);
 } System;
 
-int32_t system_manager_init(void);
-int32_t system_manager_add_entity(EntityId, unsigned long);
-int32_t system_manager_remove_entity(EntityId);
-int32_t system_register(const char*, void(*)(), unsigned long);
-void system_manager_on_update(double);
-void test_systems();
+typedef struct {
+    System registered_systems[MAX_NUMBER_OF_SYSTEMS];
+    size_t number_of_registered_systems;
+} SystemManager;
+
+extern int32_t system_manager_init(SystemManager*);
+extern int32_t system_manager_add_entity(SystemManager*, EntityId, Signature);
+extern int32_t system_manager_remove_entity(SystemManager*, EntityId);
+extern int32_t system_register(SystemManager*, const char*, void(*)(), Signature);
+extern void system_manager_on_update(SystemManager*, double);
+extern void test_systems();
 
 #endif // SYSTEM_H

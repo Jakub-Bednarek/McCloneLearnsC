@@ -4,18 +4,6 @@
 #include <errno.h>
 #include <stdio.h>
 
-struct SystemManager {
-    System registered_systems[MAX_NUMBER_OF_SYSTEMS];
-    size_t number_of_registered_systems;
-} g_system_manager;
-
-void system_manager_on_update(const double delta_time)
-{
-    for(size_t i = 0; i < g_system_manager.number_of_registered_systems; ++i) {
-        g_system_manager.registered_systems[i].on_update(delta_time);
-    }
-}
-
 int32_t system_add_entity(System* system, const EntityId entity)
 {
     for (size_t i = 0; i < system->number_of_registered_entities; ++i) {
@@ -50,35 +38,35 @@ void system_remove_entity(System* system, const EntityId entity)
     }
 }
 
-int32_t system_manager_init()
+int32_t system_manager_init(SystemManager* system_manager)
 {
-    g_system_manager.number_of_registered_systems = 0;
+    system_manager->number_of_registered_systems = 0;
 }
 
-int32_t system_manager_add_entity(const EntityId entity, const unsigned long entity_signature)
+int32_t system_manager_add_entity(SystemManager* system_manager, const EntityId entity, const Signature entity_signature)
 {
-    for(size_t i = 0; i < g_system_manager.number_of_registered_systems; ++i) {
-        if((g_system_manager.registered_systems[i].signature & entity_signature) > 0) {
-            system_add_entity(&g_system_manager.registered_systems[i], entity);
+    for(size_t i = 0; i < system_manager->number_of_registered_systems; ++i) {
+        if((system_manager->registered_systems[i].signature & entity_signature) > 0) {
+            system_add_entity(&system_manager->registered_systems[i], entity);
         }
     }
 
     return 0;
 }
 
-int32_t system_manager_remove_entity(const EntityId entity)
+int32_t system_manager_remove_entity(SystemManager* system_manager, const EntityId entity)
 {
-    for(size_t i = 0; i < g_system_manager.number_of_registered_systems; i++) {
-        system_remove_entity(&g_system_manager.registered_systems[i], entity);
+    for(size_t i = 0; i < system_manager->number_of_registered_systems; i++) {
+        system_remove_entity(&system_manager->registered_systems[i], entity);
     }
 
     return 0;
 }
 
-int32_t system_register(const char* name, void(*update_callback)(), const unsigned long system_signature)
+int32_t system_register(SystemManager* system_manager, const char* name, void(*update_callback)(), const Signature system_signature)
 {
-    for(size_t i = 0; i < g_system_manager.number_of_registered_systems; ++i) {
-        if(strcmp(g_system_manager.registered_systems[i].name, name) == 0) {
+    for(size_t i = 0; i < system_manager->number_of_registered_systems; ++i) {
+        if(strcmp(system_manager->registered_systems[i].name, name) == 0) {
             errno = SYSTEM_ALREADY_REGISTERED;
             return -1;
         }
@@ -88,9 +76,16 @@ int32_t system_register(const char* name, void(*update_callback)(), const unsign
     for(size_t i = 0; i < MAX_ENTITIES_IN_SYSTEM; i++) {
         system_to_register.registered_entities[i] = -1;
     }
-    g_system_manager.registered_systems[g_system_manager.number_of_registered_systems++] = system_to_register;
+    system_manager->registered_systems[system_manager->number_of_registered_systems++] = system_to_register;
 
     return 0;
+}
+
+void system_manager_on_update(SystemManager* system_manager, const double delta_time)
+{
+    for(size_t i = 0; i < system_manager->number_of_registered_systems; ++i) {
+        system_manager->registered_systems[i].on_update(delta_time);
+    }
 }
 
 // void update_sys(double delta_time) {
@@ -132,9 +127,9 @@ int32_t system_register(const char* name, void(*update_callback)(), const unsign
 //     system_manager_add_entity(19, 0b1111);
 
 //     for(size_t i = 0; i < 2; ++i){
-//         printf("Name: %s\nArray: [",g_system_manager.registered_systems[i].name);
-//         for(size_t j = 0; j < g_system_manager.registered_systems[i].number_of_registered_entities; ++j) {
-//             printf("%d, ", g_system_manager.registered_systems[i].registered_entities[j]);
+//         printf("Name: %s\nArray: [",system_manager->registered_systems[i].name);
+//         for(size_t j = 0; j < system_manager->registered_systems[i].number_of_registered_entities; ++j) {
+//             printf("%d, ", system_manager->registered_systems[i].registered_entities[j]);
 //         }
 //         printf("]\n");
 //     }
