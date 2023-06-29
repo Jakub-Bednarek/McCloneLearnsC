@@ -5,10 +5,6 @@
 #include "core/timer.h"
 #include "core/ecs/ecs_manager.h"
 #include "utils/bmp_loader.h"
-#include "core/ecs/entity.h"
-#include "data_structures/hash_map.h"
-#include "core/ecs/component.h"
-#include "core/ecs/system.h"
 
 #include <stdio.h>
 #include <stdlib.h>
