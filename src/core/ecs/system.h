@@ -26,9 +26,12 @@ typedef struct {
     size_t number_of_registered_systems;
 } SystemManager;
 
-extern int32_t system_manager_init(SystemManager*);
+extern int32_t system_manager_initialize(SystemManager*);
+extern int32_t system_manager_uninitialize(SystemManager*);
 extern int32_t system_manager_add_entity(SystemManager*, EntityId, Signature);
 extern int32_t system_manager_remove_entity(SystemManager*, EntityId);
+extern int32_t system_manager_extend_entity_signature(SystemManager*, EntityId, Signature);
+extern int32_t system_manager_reduce_entity_signature(SystemManager*, EntityId, Signature);
 extern int32_t system_register(SystemManager*, const char*, void(*)(), Signature);
 extern void system_manager_on_update(SystemManager*, double);
 extern void test_systems();

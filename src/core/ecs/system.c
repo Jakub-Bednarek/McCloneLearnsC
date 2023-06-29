@@ -3,31 +3,36 @@
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdbool.h>
+
+int32_t system_entity_find(System* system, const EntityId entity)
+{
+    for(size_t i = 0; i < system->number_of_registered_entities; ++i) {
+        if(system->registered_entities[i] == entity) {
+            return i;
+        }
+    }
+
+    return -1;
+}
 
 int32_t system_add_entity(System* system, const EntityId entity)
 {
-    for (size_t i = 0; i < system->number_of_registered_entities; ++i) {
-        if(system->registered_entities[i] == entity) {
-            errno = ENTITY_ALREADY_REGISTERED_IN_SYSTEM;
-            return -1;
-        }
+    if(system_entity_find(system, entity) != -1) {
+        errno = ENTITY_ALREADY_REGISTERED_IN_SYSTEM;
+        return -1;
     }
 
     system->registered_entities[system->number_of_registered_entities++] = entity;
 }
 
-void system_remove_entity(System* system, const EntityId entity)
+int32_t system_remove_entity(System* system, const EntityId entity)
 {
-    int32_t found_index = -1;
-    for(size_t i = 0; i < system->number_of_registered_entities; ++i) {
-        if(system->registered_entities[i] == entity) {
-            found_index = i;
-            break;
-        }
-    }
+    int32_t found_index = system_entity_find(system, entity);
 
     if(found_index == -1) {
-        return;
+        errno = ENTITY_NOT_REGISTERED_IN_SYSTEM;
+        return -1;
     }
 
     if(found_index == system->number_of_registered_entities - 1) {
@@ -36,17 +41,26 @@ void system_remove_entity(System* system, const EntityId entity)
     else {
         system->registered_entities[found_index] = system->registered_entities[--system->number_of_registered_entities];
     }
+
+    return 0;
 }
 
-int32_t system_manager_init(SystemManager* system_manager)
+int32_t system_manager_initialize(SystemManager* system_manager)
 {
+    printf("System manager initialize\n");
     system_manager->number_of_registered_systems = 0;
 }
 
-int32_t system_manager_add_entity(SystemManager* system_manager, const EntityId entity, const Signature entity_signature)
+int32_t system_manager_uninitalize(SystemManager* system_manager)
+{
+    printf("System manager uninitialize\n");
+    system_manager->number_of_registered_systems = 0;
+}
+
+int32_t system_manager_add_entity(SystemManager* system_manager, const EntityId entity, const Signature signature)
 {
     for(size_t i = 0; i < system_manager->number_of_registered_systems; ++i) {
-        if((system_manager->registered_systems[i].signature & entity_signature) > 0) {
+        if((system_manager->registered_systems[i].signature & signature) > 0) {
             system_add_entity(&system_manager->registered_systems[i], entity);
         }
     }
@@ -54,9 +68,40 @@ int32_t system_manager_add_entity(SystemManager* system_manager, const EntityId 
     return 0;
 }
 
+int32_t system_manager_extend_entity_signature(SystemManager* system_manager, const EntityId entity, const Signature signature)
+{
+    System* system = NULL;
+    bool entity_found = false;
+
+    for(size_t i = 0; i < system_manager->number_of_registered_systems; ++i) {
+        system = &system_manager->registered_systems[i];
+        if(system->signature & signature == system->signature) {
+            system_add_entity(system, entity);
+        }
+    }
+
+    return 0;
+}
+
+int32_t system_manager_reduce_entity_signature(SystemManager* system_manager, const EntityId entity, const Signature signature)
+{
+    System* system = NULL;
+    bool entity_removed = false;
+    for(size_t i = 0; i < system_manager->number_of_registered_systems; ++i) {
+        system = &system_manager->registered_systems[i];
+        if(system->signature & signature != system->signature) {
+            if(system_remove_entity(system, entity) != -1) {
+                entity_removed = true;
+            }
+        }
+    }
+
+    return (int32_t)(entity_removed);
+}
+
 int32_t system_manager_remove_entity(SystemManager* system_manager, const EntityId entity)
 {
-    for(size_t i = 0; i < system_manager->number_of_registered_systems; i++) {
+    for(size_t i = 0; i < system_manager->number_of_registered_systems; ++i) {
         system_remove_entity(&system_manager->registered_systems[i], entity);
     }
 

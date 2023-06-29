@@ -13,19 +13,19 @@ struct ECSManager {
     SystemManager system_manager;
 } g_ecs_manager;
 
-int32_t ecs_uninitialize()
+int32_t ecs_initialize()
 {
     entity_manager_initialize(&g_ecs_manager.entity_manager);
     component_manager_initialize(&g_ecs_manager.component_manager);
-    system_manager_init(&g_ecs_manager.system_manager);
-    printf("Initializing ecs\n");
+    system_manager_initialize(&g_ecs_manager.system_manager);
     return 0;
 }
 
-int32_t ecs_clean_up()
+int32_t ecs_uninitialize()
 {
-    component_manager_initialize(&g_ecs_manager.component_manager);
-    printf("Ecs clean up\n");
+    system_manager_uninitalize(&g_ecs_manager.system_manager);
+    component_manager_uninitialize(&g_ecs_manager.component_manager);
+    entity_manager_uninitialize(&g_ecs_manager.entity_manager);
     return 0;
 }
 
@@ -69,29 +69,36 @@ int32_t ecs_register_component(const char* name, const size_t size, const size_t
 
 int32_t ecs_add_component_to_entity(const char* name, const EntityId entity, void** data_ptr)
 {
-    Signature signature = 0;
-    int32_t ret_val = component_add_to_entity(&g_ecs_manager.component_manager, name, entity, data_ptr, &signature);
+    Signature component_signature = 0;
+    int32_t ret_val = component_add_to_entity(&g_ecs_manager.component_manager, name, entity, data_ptr, &component_signature);
     if(ret_val == -1) {
         printf("Error while adding component to entity, error code: %d\n", errno);
         return ret_val;
     }
 
-    entity_add_to_signature(&g_ecs_manager.entity_manager, entity, signature);
-    // TODO Handle update in system
+    entity_add_to_signature(&g_ecs_manager.entity_manager, entity, component_signature);
+
+    Signature entity_signature = 0;
+    entity_get_signature(&g_ecs_manager.entity_manager, entity, &entity_signature);
+    system_manager_extend_entity_signature(&g_ecs_manager.system_manager, entity, entity_signature);
 
     return 0;
 }
 
 int32_t ecs_remove_component_from_entity(const char* name, const EntityId entity)
 {
-    Signature signature = 0;
-    int32_t ret_val = component_remove_from_entity(&g_ecs_manager.component_manager, name, entity, &signature);
+    Signature component_signature = 0;
+    int32_t ret_val = component_remove_from_entity(&g_ecs_manager.component_manager, name, entity, &component_signature);
     if(ret_val == -1) {
         printf("Error while removing component from entity, error code: %d\n", ret_val);
         return ret_val;
     }
 
-    entity_remove_from_signature(&g_ecs_manager.entity_manager, entity, signature);
+    entity_remove_from_signature(&g_ecs_manager.entity_manager, entity, component_signature);
+
+    Signature entity_signature = 0;
+    entity_get_signature(&g_ecs_manager.entity_manager, entity, &entity_signature);
+    system_manager_reduce_entity_signature(&g_ecs_manager.system_manager, entity, entity_signature);
 
     return 0;
 }

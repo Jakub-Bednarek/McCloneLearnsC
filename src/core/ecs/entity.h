@@ -22,6 +22,7 @@ typedef struct {
 } EntityManager;
 
 extern void entity_manager_initialize(EntityManager*);
+extern void entity_manager_unitialize(EntityManager*);
 extern EntityId entity_get_next_free_id(EntityManager*);
 extern int32_t entity_free(EntityManager*, EntityId);
 extern int32_t entity_add_to_signature(EntityManager*, EntityId, Signature);

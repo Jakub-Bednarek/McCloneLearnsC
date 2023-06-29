@@ -29,6 +29,11 @@ void entity_manager_initialize(EntityManager* entity_manager)
     is_initialized = true;
 }
 
+void entity_manager_uninitialize(EntityManager* entity_manager)
+{
+    printf("Entity manager unitialize\n");
+}
+
 EntityId entity_get_next_free_id(EntityManager* entity_manager)
 {
     if(entity_manager->currently_allocated_entities == MAX_NUMBER_OF_ENTITIES) {

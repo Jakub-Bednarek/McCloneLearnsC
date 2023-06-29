@@ -3,10 +3,8 @@
 #include "graphics/texture.h"
 #include "graphics/texture_atlas.h"
 #include "core/timer.h"
+#include "core/ecs/ecs_manager.h"
 #include "utils/bmp_loader.h"
-#include "core/ecs/entity.h"
-#include "core/ecs/component.h"
-#include "core/ecs/system.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +28,8 @@ int main()
     SimpleTimer simple_timer = simple_timer_create();
     SimpleWindow* simple_window = window_create(1920, 1080);
     Camera camera = camera_create();
+
+    ecs_initialize();
 
     const char* textures_to_load[4] = {"res/textures/dirt.bmp", "res/textures/sand.bmp", "res/textures/stone.bmp", "res/textures/wood.bmp"};
     TextureAtlas texture_atlas = texture_atlas_create(16, 16, textures_to_load, 4);
@@ -63,6 +63,7 @@ int main()
         window_swap_buffers(simple_window);
     }
 
+    ecs_uninitialize();
     gl_clean_up(shader, &vbo, &texture_buffer, &vao, &ebo);
     window_destroy(simple_window);
 

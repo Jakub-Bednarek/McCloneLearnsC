@@ -6,12 +6,14 @@
 
 void component_manager_initialize(ComponentManager* component_manager)
 {
+    printf("Component manager initialize\n");
     component_manager->next_free_component_index = 0;
     component_manager->next_signature = 0b1;
 }
 
-void component_manager_unitialize(ComponentManager* component_manager)
+void component_manager_uninitialize(ComponentManager* component_manager)
 {
+    printf("Component manager unitialize\n");
     for(size_t i = 0; i < component_manager->next_free_component_index; i++) {
         component_manager->registered_components[i].components_storage = NULL;
         pool_allocator_free(&component_manager->registered_components[i].component_allocator);
@@ -22,7 +24,6 @@ Signature component_manager_get_next_signature(ComponentManager* component_manag
 {
     Signature next_signature = component_manager->next_signature;
     component_manager->next_signature = component_manager->next_signature << 1;
-    printf("Next sig: %d\n", component_manager->next_signature);
 
     return next_signature;
 }
