@@ -1,5 +1,7 @@
 set(LIBRARY_NAME engine)
 
+add_subdirectory(data_structures)
+
 set(LINUX_LIBS "-lGLU -lGL -lX11 -lXfixes -lm" GLAD cglm_headers)
 set(INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -52,4 +54,6 @@ set(UTILS_SOURCES
 
 add_library(${LIBRARY_NAME} STATIC ${CORE_SOURCES} ${GRAPHICS_SOURCES} ${WORLD_SOURCES} ${UTILS_SOURCES})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${INCLUDE_DIRS})
-target_link_libraries(${LIBRARY_NAME} ${LINUX_LIBS})
+target_link_libraries(${LIBRARY_NAME}
+    ${LINUX_LIBS}
+    data_structures)
