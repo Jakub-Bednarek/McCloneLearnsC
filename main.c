@@ -5,6 +5,7 @@
 #include "core/timer.h"
 #include "utils/bmp_loader.h"
 #include "core/ecs/entity.h"
+#include "data_structures/hash_map.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,6 +22,19 @@ void tick(SimpleWindow* window, SimpleTimer* timer)
     {
         total_delta -= TICKS_THRESHOLD;
     }
+}
+
+typedef struct {
+    int x;
+    int d;
+} xd;
+
+void add(struct hash_map_t* m)
+{
+    xd* x = calloc(sizeof(xd), 1);
+    x->x = 150;
+    x->d = 250;
+    hash_map_add(m, "a", (void*)x);
 }
 
 int main()
@@ -41,6 +55,16 @@ int main()
         printf("SimpleWindow creation failure with errorCode: %d\n", simple_window->error_code);
         window_destroy(simple_window);
         exit(1);
+    }
+
+    struct hash_map_t* m = hash_map_create(10);
+    add(m);
+
+    xd* x = NULL;
+    hash_map_get(m, "a", &x);
+    if(x != NULL) {
+        printf("GET: %d, %d \n", x->x, x->d);
+        free(x);
     }
 
     set_on_key_press_callback(simple_window, gl_set_draw_mode_callback, NULL);

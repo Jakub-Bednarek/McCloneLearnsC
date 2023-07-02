@@ -5,17 +5,27 @@
 #include <stdbool.h>
 #include <string.h>
 
+/* TODO
+- Code cleanup
+- proper hash function
+- class generalization for key [MACRO?]
+- rehash func
+- non-constant map size
+- buckets split
+- proper unified error handling
+*/
+
 typedef struct {
     const char* key;
     bool used;
-    any_val_t val;
+    any_val_t data;
 } entry_t;
 
-struct hash_map_t {
+typedef struct {
     size_t size;
     size_t used_size;
     entry_t* entries;
-};
+} hash_map_t;
 
 size_t hash_map_hash_string(const char* key, const size_t size) {
     size_t hash = 0;
@@ -24,22 +34,19 @@ size_t hash_map_hash_string(const char* key, const size_t size) {
         hash += (size_t)key[i];
     }
 
-    // printf("Hash bef mod: %d\n", hash);
-    // printf("Hash after mod: %d\n", hash % size);
-
     return hash % size;
 }
 
-void hash_map_print(const struct hash_map_t* hash_map)
+void hash_map_print(const hash_map_t* hash_map)
 {
     for(size_t i = 0; i < hash_map->size; i++) {
-            printf("I: %ld, %s, used: %d, val: %d\n", i, hash_map->entries[i].key, hash_map->entries[i].used, hash_map->entries[i].val);
+            printf("I: %ld, %s, used: %d, val: %d\n", i, hash_map->entries[i].key, hash_map->entries[i].used, hash_map->entries[i].data);
     }
 }
 
-struct hash_map_t* hash_map_create(const size_t size)
+map_t hash_map_create(const size_t size)
 {
-    struct hash_map_t* hash_map = calloc(sizeof(struct hash_map_t), 1);
+    hash_map_t* hash_map = calloc(sizeof(hash_map_t), 1);
     if(hash_map == NULL) {
         errno = MEMORY_ALLOCATION_FAILED;
         return NULL;
@@ -56,14 +63,15 @@ struct hash_map_t* hash_map_create(const size_t size)
     return hash_map;
 }
 
-int32_t hash_map_add(struct hash_map_t* hash_map, const char* key, any_val_t val)
+int32_t hash_map_add(map_t map, const char* key, any_val_t data)
 {
+    hash_map_t* hash_map = (hash_map_t*)map;
     if(hash_map == NULL) {
-        return NULL_DATA_STRUCT;
+        return HASH_MAP_IS_NULL;
     }
 
     if(hash_map->used_size == hash_map->size) {
-        return HASH_MAP_FULL;
+        return 10;
     }
 
     size_t index = hash_map_hash_string(key, hash_map->size);
@@ -71,22 +79,23 @@ int32_t hash_map_add(struct hash_map_t* hash_map, const char* key, any_val_t val
         if(!hash_map->entries[index].used) {
                 hash_map->entries[index].key = key;
                 hash_map->entries[index].used = true;
-                hash_map->entries[index].val = val;
+                hash_map->entries[index].data = data;
                 ++hash_map->used_size;
                 break;
         }
         else if (strcmp(hash_map->entries[index].key, key) == 0) {
-            return KEY_ALREADY_IN_MAP;
+            return KEY_IN_MAP;
         }
     }
 
     return 0;
 }
 
-any_val_t hash_map_get(struct hash_map_t* hash_map, const char* key)
+int32_t hash_map_get(map_t map, const char* key, any_val_t* data)
 {
+    hash_map_t* hash_map = (hash_map_t*)map;
     if(hash_map == NULL) {
-        return NULL;
+        return HASH_MAP_IS_NULL;
     }
 
     size_t index = hash_map_hash_string(key, hash_map->size);
@@ -96,19 +105,21 @@ any_val_t hash_map_get(struct hash_map_t* hash_map, const char* key)
         }
         if(strcmp(hash_map->entries[index].key, key) == 0) {
             if(!hash_map->entries[index].used) {
-                return NULL;
+                return KEY_NOT_IN_MAP;
             }
-            return hash_map->entries[index].val;
+            *data = hash_map->entries[index].data;
+            break;
         }
     }
 
-    return NULL;
+    return 0;
 }
 
-int32_t hash_map_remove(struct hash_map_t* hash_map, const char* key)
+int32_t hash_map_remove(map_t map, const char* key)
 {
+    hash_map_t* hash_map = (hash_map_t*)map;
     if(hash_map == NULL) {
-        return NULL_DATA_STRUCT;
+        return HASH_MAP_IS_NULL;
     }
 
     size_t index = hash_map_hash_string(key, hash_map->size);
@@ -124,4 +135,18 @@ int32_t hash_map_remove(struct hash_map_t* hash_map, const char* key)
     }
 
     return KEY_NOT_IN_MAP;
+}
+
+int32_t hash_map_free(map_t map)
+{
+    hash_map_t* hash_map = (hash_map_t*)map;
+    if(hash_map == NULL) {
+        return HASH_MAP_IS_NULL;
+    }
+
+    free(hash_map->entries);
+    free(hash_map);
+    hash_map = NULL;
+
+    return 0;
 }
