@@ -5,60 +5,68 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define DEFAULT_NUMBER_OF_BUCKETS 50
+
 /* TODO
 - Code cleanup
-- proper hash function
 - class generalization for key [MACRO?]
-- rehash func
-- non-constant map size
-- buckets split
 - proper unified error handling
+- don't add duplications
 */
 
-typedef struct {
+struct entry_t;
+
+struct entry_t {
     const char* key;
-    bool used;
     any_val_t data;
-} entry_t;
+    struct entry_t* next;
+};
 
 typedef struct {
     size_t size;
-    size_t used_size;
-    entry_t* entries;
+    struct entry_t* head;
+    struct entry_t* tail;
+} bucket_t;
+
+typedef struct {
+    size_t size;
+    bucket_t* buckets;
 } hash_map_t;
 
-size_t hash_map_hash_string(const char* key, const size_t size) {
-    size_t hash = 0;
-    size_t key_size = strlen(key);
-    for(size_t i = 0; i < key_size; i++) {
-        hash += (size_t)key[i];
+// Current implementation is JOAAT hashing algorithm
+size_t hash_map_hash_string(const char* key, const size_t buckets_number) {
+    uint32_t hash = 0;
+    size_t i = 0;
+    while(key[i] != 0) {
+        hash == key[i++];
+        hash += hash << 10;
+        hash ^= hash >> 6;
     }
 
-    return hash % size;
+    hash += hash << 3;
+    hash ^= hash >> 11;
+    hash += hash << 15;
+
+    return hash % buckets_number;
 }
 
-void hash_map_print(const hash_map_t* hash_map)
+map_t hash_map_create()
 {
-    for(size_t i = 0; i < hash_map->size; i++) {
-            printf("I: %ld, %s, used: %d, val: %d\n", i, hash_map->entries[i].key, hash_map->entries[i].used, hash_map->entries[i].data);
-    }
+    return hash_map_create_size(DEFAULT_NUMBER_OF_BUCKETS);
 }
 
-map_t hash_map_create(const size_t size)
+map_t hash_map_create_size(const size_t size)
 {
     hash_map_t* hash_map = calloc(sizeof(hash_map_t), 1);
     if(hash_map == NULL) {
-        errno = MEMORY_ALLOCATION_FAILED;
         return NULL;
     }
 
-    hash_map->entries = calloc(sizeof(entry_t), size);
-    if(hash_map->entries == NULL) {
-        errno = MEMORY_ALLOCATION_FAILED;
+    hash_map->buckets = calloc(sizeof(bucket_t), size);
+    if(hash_map->buckets == NULL) {
         return NULL;
     }
     hash_map->size = size;
-    hash_map->used_size = 0;
 
     return hash_map;
 }
@@ -70,22 +78,23 @@ int32_t hash_map_add(map_t map, const char* key, any_val_t data)
         return HASH_MAP_IS_NULL;
     }
 
-    if(hash_map->used_size == hash_map->size) {
-        return 10;
+    struct entry_t* entry = calloc(sizeof(struct entry_t), 1);
+    if(entry == NULL) {
+        return MEMORY_ALLOCATION_FAILED;
     }
 
-    size_t index = hash_map_hash_string(key, hash_map->size);
-    for(size_t i = 0; i < hash_map->size; ++i, ++index) {
-        if(!hash_map->entries[index].used) {
-                hash_map->entries[index].key = key;
-                hash_map->entries[index].used = true;
-                hash_map->entries[index].data = data;
-                ++hash_map->used_size;
-                break;
-        }
-        else if (strcmp(hash_map->entries[index].key, key) == 0) {
-            return KEY_IN_MAP;
-        }
+    entry->key = key;
+    entry->next = NULL;
+    entry->data = data;
+
+    const size_t index = hash_map_hash_string(key, hash_map->size);
+    bucket_t* bucket = &hash_map->buckets[index];
+    if(bucket->head == NULL) {
+        bucket->head = entry;
+        bucket->tail = entry;
+    } else {
+        bucket->tail->next = entry;
+        bucket->tail = entry;
     }
 
     return 0;
@@ -98,19 +107,16 @@ int32_t hash_map_get(map_t map, const char* key, any_val_t* data)
         return HASH_MAP_IS_NULL;
     }
 
-    size_t index = hash_map_hash_string(key, hash_map->size);
-    for(size_t i = 0; i < hash_map->size; ++i, ++index) {
-        if(index == hash_map->size) {
-            index = 0;
-        }
-        if(strcmp(hash_map->entries[index].key, key) == 0) {
-            if(!hash_map->entries[index].used) {
-                return KEY_NOT_IN_MAP;
-            }
-            *data = hash_map->entries[index].data;
+    const size_t index = hash_map_hash_string(key, hash_map->size);
+    bucket_t* bucket = &hash_map->buckets[index];
+    struct entry_t* entry = bucket->head;
+    while(entry != NULL) {
+        if(strcmp(entry->key, key) == 0) {
+            *data = entry->data;
             break;
         }
-    }
+        entry = entry->next;
+    } 
 
     return 0;
 }
@@ -122,16 +128,30 @@ int32_t hash_map_remove(map_t map, const char* key)
         return HASH_MAP_IS_NULL;
     }
 
-    size_t index = hash_map_hash_string(key, hash_map->size);
-    for(size_t i = 0; i < hash_map->size; i++) {
-        if(index == hash_map->size) {
-            index = 0;
+    const size_t index = hash_map_hash_string(key, hash_map->size);
+    bucket_t* bucket = &hash_map->buckets[index];
+    struct entry_t* prev = bucket->head;
+    if(strcmp(prev->key, key) == 0) {
+        if(bucket->tail == prev) {
+            bucket->tail = NULL;
         }
-        if(strcmp(hash_map->entries[index].key, key) == 0) {
-            hash_map->entries[index].used = false;
-            --hash_map->used_size;
+        bucket->head = prev->next;
+        free(prev);
+        return 0;
+    }
+    
+    struct entry_t* curr = prev->next;
+    while(curr != NULL) {
+        if(strcmp(curr->key, key) == 0) {
+            if(curr == hash_map->buckets[index].tail) {
+                hash_map->buckets[index].tail = prev;
+            }
+            prev->next = curr->next;
+            free(curr);
             return 0;
         }
+        prev = curr;
+        curr = curr->next;
     }
 
     return KEY_NOT_IN_MAP;
@@ -144,7 +164,15 @@ int32_t hash_map_free(map_t map)
         return HASH_MAP_IS_NULL;
     }
 
-    free(hash_map->entries);
+    for(size_t i = 0; i < hash_map->size; ++i) {
+        struct entry_t* entry = hash_map->buckets[i].head;
+        struct entry_t* next = NULL;
+        while(entry != NULL) {
+            entry = entry->next;
+            free(entry);
+        }
+    }
+    free(hash_map->buckets);
     free(hash_map);
     hash_map = NULL;
 
