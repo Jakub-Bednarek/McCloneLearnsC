@@ -12,7 +12,8 @@
 typedef void* any_val_t;
 typedef void* map_t;
 
-extern map_t hash_map_create(size_t size);
+extern map_t   hash_map_create();
+extern map_t   hash_map_create_size(size_t size);
 extern int32_t hash_map_add(map_t map, const char* key, any_val_t data);
 extern int32_t hash_map_get(map_t map, const char* key, any_val_t* data);
 extern int32_t hash_map_remove(map_t hash_map, const char* key);
