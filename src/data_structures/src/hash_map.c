@@ -1,17 +1,13 @@
 #include "hash_map.h"
 
 #include <stdio.h>
-#include <errno.h>
 #include <stdbool.h>
 #include <string.h>
 
-#define DEFAULT_NUMBER_OF_BUCKETS 50
+#define DEFAULT_NUMBER_OF_BUCKETS 37
 
 /* TODO
-- Code cleanup
 - class generalization for key [MACRO?]
-- proper unified error handling
-- don't add duplications
 */
 
 struct entry_t;
@@ -25,7 +21,6 @@ struct entry_t {
 typedef struct {
     size_t size;
     struct entry_t* head;
-    struct entry_t* tail;
 } bucket_t;
 
 typedef struct {
@@ -33,7 +28,7 @@ typedef struct {
     bucket_t* buckets;
 } hash_map_t;
 
-// Current implementation is JOAAT hashing algorithm
+// JOAAT hashing algorithm implementation for strings
 size_t hash_map_hash_string(const char* key, const size_t buckets_number) {
     uint32_t hash = 0;
     size_t i = 0;
@@ -91,10 +86,17 @@ int32_t hash_map_add(map_t map, const char* key, any_val_t data)
     bucket_t* bucket = &hash_map->buckets[index];
     if(bucket->head == NULL) {
         bucket->head = entry;
-        bucket->tail = entry;
     } else {
-        bucket->tail->next = entry;
-        bucket->tail = entry;
+        struct entry_t* curr = bucket->head;
+        struct entry_t* prev = bucket->head;
+        do {
+            if(strcmp(curr->key, key) == 0) {
+                return KEY_IN_MAP;
+            }
+            prev = curr;
+            curr = curr->next;
+        } while (curr != NULL);
+        prev->next = entry;
     }
 
     return 0;
@@ -132,9 +134,6 @@ int32_t hash_map_remove(map_t map, const char* key)
     bucket_t* bucket = &hash_map->buckets[index];
     struct entry_t* prev = bucket->head;
     if(strcmp(prev->key, key) == 0) {
-        if(bucket->tail == prev) {
-            bucket->tail = NULL;
-        }
         bucket->head = prev->next;
         free(prev);
         return 0;
@@ -143,9 +142,6 @@ int32_t hash_map_remove(map_t map, const char* key)
     struct entry_t* curr = prev->next;
     while(curr != NULL) {
         if(strcmp(curr->key, key) == 0) {
-            if(curr == hash_map->buckets[index].tail) {
-                hash_map->buckets[index].tail = prev;
-            }
             prev->next = curr->next;
             free(curr);
             return 0;
