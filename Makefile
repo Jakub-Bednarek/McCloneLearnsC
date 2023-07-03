@@ -1,7 +1,5 @@
-PWD=$(shell pwd)
 BUILD_DIR = "build"
 UT_DIR = ${BUILD_DIR}/ut
-UT_BIN_DIR = ${PWD}/${UT_DIR}/bin
 RELEASE_DIR = ${BUILD_DIR}/release
 DEBUG_DIR = ${BUILD_DIR}/debug
 SOURCE_DIR = $(pwd)
@@ -35,7 +33,7 @@ config_release: create_release_dir
 
 config_ut: create_ut_dir
 	@echo "${COLOR_GREEN}Running UT config...${COLOR_CLEAR}"
-	@cd ${UT_DIR} && cmake -DUT_ENABLED=True -DUT_BIN_DIR=${UT_BIN_DIR} ../..
+	@cd ${UT_DIR} && cmake -DUT_ENABLED=True ../..
 	@echo "${COLOR_GREEN}--- UT Config done ---${COLOR_CLEAR}"
 
 release_build: config
@@ -60,7 +58,6 @@ build_release: config_release
 
 build_ut: config_ut
 	@echo "${COLOR_GREEN}Starting UT builder...${COLOR_CLEAR}"
-	@cd ${UT_DIR} && make
 
 run_release: build_release
 	@echo "${COLOR_GREEN}Running release ${EXE_NAME}...${COLOR_CLEAR}"
@@ -70,6 +67,5 @@ run_debug: build_debug
 	@echo "${COLOR_GREEN}Running debug ${EXE_NAME}...${COLOR_CLEAR}"
 	@./${DEBUG_DIR}/${EXE_NAME}
 
-run_ut:
+run_ut: build_ut
 	@echo "${COLOR_GREEN}Starting UT runner...${COLOR_CLEAR}"
-	@python3 scripts/ut_runner.py -d ${UT_BIN_DIR} -f
