@@ -1,0 +1,1 @@
+add_ut(TARGET my_test HEADERS test.h SOURCES test.c)
