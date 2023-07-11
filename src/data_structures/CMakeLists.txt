@@ -8,4 +8,5 @@ set(SOURCE
 
 add_library(data_structures STATIC ${SOURCE})
 target_include_directories(data_structures PUBLIC ${INCLUDE_DIR})
-target_include_directories(data_structures PRIVATE ${INCLUDE_DIR}/data_structures)
+
+add_ut_subdirectory(tests)
