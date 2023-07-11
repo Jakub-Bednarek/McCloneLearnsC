@@ -1,4 +1,4 @@
-#include "hash_map.h"
+#include "data_structures/hash_map.h"
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -25,6 +25,7 @@ typedef struct {
 
 typedef struct {
     size_t size;
+    size_t allocated_elements_size;
     bucket_t* buckets;
 } hash_map_t;
 
@@ -62,6 +63,7 @@ map_t hash_map_create_size(const size_t size)
         return NULL;
     }
     hash_map->size = size;
+    hash_map->allocated_elements_size = 0;
 
     return hash_map;
 }
@@ -98,6 +100,8 @@ int32_t hash_map_add(map_t map, const char* key, any_val_t data)
         } while (curr != NULL);
         prev->next = entry;
     }
+
+    ++hash_map->allocated_elements_size;
 
     return 0;
 }
@@ -136,6 +140,8 @@ int32_t hash_map_remove(map_t map, const char* key)
     if(strcmp(prev->key, key) == 0) {
         bucket->head = prev->next;
         free(prev);
+        --hash_map->allocated_elements_size;
+
         return 0;
     }
     
@@ -144,6 +150,8 @@ int32_t hash_map_remove(map_t map, const char* key)
         if(strcmp(curr->key, key) == 0) {
             prev->next = curr->next;
             free(curr);
+            --hash_map->allocated_elements_size;
+
             return 0;
         }
         prev = curr;
@@ -173,4 +181,14 @@ int32_t hash_map_free(map_t map)
     hash_map = NULL;
 
     return 0;
+}
+
+size_t hash_map_size(map_t map)
+{
+    hash_map_t* hash_map = (hash_map_t*)map;
+    if(hash_map == NULL) {
+        return HASH_MAP_IS_NULL;
+    }
+
+    return hash_map->allocated_elements_size;
 }

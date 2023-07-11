@@ -18,5 +18,6 @@ extern int32_t hash_map_add(map_t map, const char* key, any_val_t data);
 extern int32_t hash_map_get(map_t map, const char* key, any_val_t* data);
 extern int32_t hash_map_remove(map_t hash_map, const char* key);
 extern int32_t hash_map_free(map_t map);
+extern size_t hash_map_size(map_t map);
 
 #endif // HASH_MAP_C
