@@ -5,6 +5,7 @@
 #include "core/timer.h"
 #include "utils/bmp_loader.h"
 #include "core/ecs/entity.h"
+#include "data_structures/hash_map.h"
 
 #include <stdio.h>
 #include <stdlib.h>
