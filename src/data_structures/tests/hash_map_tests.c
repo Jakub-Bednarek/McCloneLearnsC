@@ -227,7 +227,7 @@ void test_hash_map_should_get_last_element_when_multiple_keys_present()
     hash_map_add(map, "key_3", (void*)&dummy[2]);
 
     dummy_struct_t* last_elem = NULL;
-    hash_map_get(map, "key_3", &last_elem);
+    hash_map_get(map, "key_3", (void**)&last_elem);
 
     TEST_ASSERT_EQUAL_PTR(last_elem, &dummy[2]);
 

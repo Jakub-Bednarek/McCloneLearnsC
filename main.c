@@ -14,7 +14,7 @@
 
 #define TICKS_THRESHOLD 200
 
-void tick(SimpleWindow* window, SimpleTimer* timer)
+void tick(SimpleWindow*, SimpleTimer* timer)
 {
     static int total_delta = 0;
 
