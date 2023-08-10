@@ -1,6 +1,7 @@
 set(LIBRARY_NAME engine)
 
 add_subdirectory(data_structures)
+add_subdirectory(core)
 
 set(LINUX_LIBS "-lGLU -lGL -lX11 -lXfixes -lm" GLAD cglm_headers)
 set(INCLUDE_DIRS
@@ -11,13 +12,21 @@ set(CORE_HEADERS
     core/error.h
     core/input.h
     core/timer.h
-    core/ecs/entity.h)
+    core/ecs/entity.h
+    core/ecs/component.h
+    core/ecs/system.h
+    core/ecs/ecs_manager.h
+    core/allocators/pool_allocator.h)
 
 set(CORE_SOURCES
     core/input.c
     core/timer.c
     core/error.c
-    core/ecs/entity.c)
+    core/ecs/entity.c
+    core/ecs/component.c
+    core/ecs/system.c
+    core/ecs/ecs_manager.c
+    core/allocators/pool_allocator.c)
 
 set(GRAPHICS_HEADERS
     graphics/renderer.h
@@ -34,7 +43,8 @@ set(GRAPHICS_SOURCES
 set(WORLD_HEADERS
     world/world.h)
 
-set(WORLD_SOURCES)
+set(WORLD_SOURCES
+    world/world.c)
 
 set(UTILS_HEADERS
     utils/file_loader.h

@@ -3,6 +3,7 @@
 #include "graphics/texture.h"
 #include "graphics/texture_atlas.h"
 #include "core/timer.h"
+#include "core/ecs/ecs_manager.h"
 #include "utils/bmp_loader.h"
 #include "core/ecs/entity.h"
 #include "data_structures/hash_map.h"
@@ -13,7 +14,7 @@
 
 #define TICKS_THRESHOLD 200
 
-void tick(SimpleWindow* window, SimpleTimer* timer)
+void tick(SimpleWindow*, SimpleTimer* timer)
 {
     static int total_delta = 0;
 
@@ -26,11 +27,11 @@ void tick(SimpleWindow* window, SimpleTimer* timer)
 
 int main()
 {
-    entity_manager_initialize();
-
     SimpleTimer simple_timer = simple_timer_create();
     SimpleWindow* simple_window = window_create(1920, 1080);
     Camera camera = camera_create();
+
+    // ecs_initialize();
 
     const char* textures_to_load[4] = {"res/textures/dirt.bmp", "res/textures/sand.bmp", "res/textures/stone.bmp", "res/textures/wood.bmp"};
     TextureAtlas texture_atlas = texture_atlas_create(16, 16, textures_to_load, 4);
@@ -64,6 +65,7 @@ int main()
         window_swap_buffers(simple_window);
     }
 
+    // ecs_uninitialize();
     gl_clean_up(shader, &vbo, &texture_buffer, &vao, &ebo);
     window_destroy(simple_window);
 

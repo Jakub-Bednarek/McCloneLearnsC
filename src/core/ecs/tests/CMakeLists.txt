@@ -1,0 +1,1 @@
+add_ut(TARGET ecs SOURCES test.c LIBRARIES engine)
