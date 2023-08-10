@@ -23,7 +23,7 @@ int32_t ecs_initialize()
 
 int32_t ecs_uninitialize()
 {
-    system_manager_uninitalize(&g_ecs_manager.system_manager);
+    system_manager_uninitialize(&g_ecs_manager.system_manager);
     component_manager_uninitialize(&g_ecs_manager.component_manager);
     entity_manager_uninitialize(&g_ecs_manager.entity_manager);
     return 0;

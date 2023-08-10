@@ -31,7 +31,7 @@ int main()
     SimpleWindow* simple_window = window_create(1920, 1080);
     Camera camera = camera_create();
 
-    ecs_initialize();
+    // ecs_initialize();
 
     const char* textures_to_load[4] = {"res/textures/dirt.bmp", "res/textures/sand.bmp", "res/textures/stone.bmp", "res/textures/wood.bmp"};
     TextureAtlas texture_atlas = texture_atlas_create(16, 16, textures_to_load, 4);
@@ -65,7 +65,7 @@ int main()
         window_swap_buffers(simple_window);
     }
 
-    ecs_uninitialize();
+    // ecs_uninitialize();
     gl_clean_up(shader, &vbo, &texture_buffer, &vao, &ebo);
     window_destroy(simple_window);
 

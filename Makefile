@@ -70,6 +70,6 @@ run_debug: build_debug
 	@echo "${COLOR_GREEN}Running debug ${EXE_NAME}...${COLOR_CLEAR}"
 	@./${DEBUG_DIR}/${EXE_NAME}
 
-run_ut:
+run_ut: build_ut
 	@echo "${COLOR_GREEN}Starting UT runner...${COLOR_CLEAR}"
 	@python3 scripts/ut_runner.py -d ${UT_BIN_DIR} -f

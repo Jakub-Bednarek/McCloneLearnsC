@@ -51,7 +51,7 @@ int32_t system_manager_initialize(SystemManager* system_manager)
     system_manager->number_of_registered_systems = 0;
 }
 
-int32_t system_manager_uninitalize(SystemManager* system_manager)
+int32_t system_manager_uninitialize(SystemManager* system_manager)
 {
     printf("System manager uninitialize\n");
     system_manager->number_of_registered_systems = 0;

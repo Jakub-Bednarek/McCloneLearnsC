@@ -1,6 +1,7 @@
 set(LIBRARY_NAME engine)
 
 add_subdirectory(data_structures)
+add_subdirectory(core)
 
 set(LINUX_LIBS "-lGLU -lGL -lX11 -lXfixes -lm" GLAD cglm_headers)
 set(INCLUDE_DIRS
@@ -42,7 +43,8 @@ set(GRAPHICS_SOURCES
 set(WORLD_HEADERS
     world/world.h)
 
-set(WORLD_SOURCES)
+set(WORLD_SOURCES
+    world/world.c)
 
 set(UTILS_HEADERS
     utils/file_loader.h

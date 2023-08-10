@@ -9,7 +9,6 @@
 #include <stdlib.h>
 
 extern float cube_vertices[108];
-
 extern float texture_coordinates[72];
 
 // static double texture_coordinates_2[] = {
