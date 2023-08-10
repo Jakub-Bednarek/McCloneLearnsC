@@ -42,7 +42,7 @@ extern void gl_update_mouse_delta(const MouseMoveEvent*, void*);
 extern Shader shader_create();
 extern unsigned int shader_compile(unsigned int, const char*);
 extern unsigned int shader_program_create(unsigned int, unsigned int);
-extern void shader_upload_data(Shader, mat4, mat4, mat4);
+extern void shader_upload_data(Shader, mat4, mat4);
 
 void render(SimpleWindow*, Camera*, SimpleTimer*, Shader, TextureAtlas*, unsigned int, unsigned int);
 

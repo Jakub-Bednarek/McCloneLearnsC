@@ -92,6 +92,7 @@ void window_handle_mouse_move_event(SimpleWindow* window, const XMotionEvent* mo
     if(mouse_move_event->x == (int)(window->mouse_x_center) && mouse_move_event->y == (int)(window->mouse_y_center)) {
         return;
     }
+
     MouseMoveEvent event;
     event.x = mouse_move_event->x;
     event.y = mouse_move_event->y;
@@ -171,7 +172,7 @@ SimpleWindow* window_create(unsigned int width, unsigned int height)
     
     XMapWindow(display, main_window);
 
-    int glx_version = gladLoaderLoadGLX(display, screen);
+    const int glx_version = gladLoaderLoadGLX(display, screen);
     if (!glx_version)
     {
         simple_window->error_code = GLX_LOAD_FAILURE;

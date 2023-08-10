@@ -1,7 +1,7 @@
 project(McCloneLearnsC)
 cmake_minimum_required(VERSION 3.21)
 
-set(COMPILE_OPTIONS "-Wall")
+set(COMPILE_OPTIONS -Wall)
 
 include(cmake/unit_test.cmake)
 

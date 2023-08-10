@@ -1,5 +1,6 @@
 #include "renderer.h"
 #include "utils/file_loader.h"
+#include "world/chunk_mesh.h"
 
 #include <stdbool.h>
 
@@ -8,6 +9,50 @@
 float mouse_last_x = 0.0f;
 float mouse_last_y = 0.0f;
 bool mouse_first_move = true;
+
+const float g_cube_vertices[] = {
+    -0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+    -0.5f,  0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,
+
+    -0.5f, -0.5f,  0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
+    -0.5f, -0.5f,  0.5f,
+
+    -0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,
+    -0.5f, -0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
+
+     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+
+    -0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f, -0.5f,  0.5f,
+    -0.5f, -0.5f,  0.5f,
+    -0.5f, -0.5f, -0.5f,
+
+    -0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f, -0.5f
+};
 
 Camera camera_create()
 {
@@ -87,8 +132,22 @@ void camera_update_input(Camera* camera, SimpleWindow* window)
         camera->pos[0] -= right[0] * CAMERA_SPEED;
         camera->pos[2] -= right[2] * CAMERA_SPEED;
     }
+    if(window_is_key_pressed(window, MC_F))
+    {
+        camera->pos[1] += 1.0f * CAMERA_SPEED;
+    }
+    else if(window_is_key_pressed(window, MC_V))
+    {
+        camera->pos[1] -= 1.0f * CAMERA_SPEED;
+    }
 }
 
+
+static const int x = 64;
+static const int y = 256;
+static const int z = 64;
+static const int count = x * y * z;
+static const int size = count * sizeof(float) * 3;
 void buffers_create(unsigned int* vertex_buffer_id, unsigned int* texture_buffer_id, unsigned int* vertex_array_id, unsigned int* element_buffer_id)
 {
     glGenVertexArrays(1, vertex_array_id);
@@ -96,7 +155,7 @@ void buffers_create(unsigned int* vertex_buffer_id, unsigned int* texture_buffer
 
     glBindVertexArray(*vertex_array_id);
     glBindBuffer(GL_ARRAY_BUFFER, *vertex_buffer_id);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_cube_vertices), g_cube_vertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -107,6 +166,26 @@ void buffers_create(unsigned int* vertex_buffer_id, unsigned int* texture_buffer
 
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
+    float* mesh = chunk_mesh_create(x, y, z);
+
+    float* mesh_ptr = mesh;
+    // for(size_t i = 0; i < x * y * 3; i++)
+    // {
+    //     printf("%f \n", *(mesh_ptr + i));
+    // }
+    if(mesh)
+    {
+        unsigned int model_buffer_id;
+        GL_CALL(glGenBuffers(1, &model_buffer_id));
+        printf("Size: %d, count: %d\n", size, count);
+        GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, model_buffer_id));
+        GL_CALL(glBufferData(GL_ARRAY_BUFFER, size, (void*)mesh, GL_STATIC_DRAW));
+        GL_CALL(glEnableVertexAttribArray(2));
+        GL_CALL(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0));
+        GL_CALL(glVertexAttribDivisor(2, 1));
+        GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+        chunk_mesh_free(mesh);
+    }
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -215,14 +294,11 @@ unsigned int shader_program_create(unsigned int vertex_shader_id, unsigned int f
     return shader_program_id;
 }
 
-void shader_upload_data(Shader shader, mat4 model, mat4 view, mat4 proj)
+void shader_upload_data(Shader shader, mat4 view, mat4 proj)
 {
     glUseProgram(shader);
 
-    unsigned int uniform_location = glGetUniformLocation(shader, "model");
-    glUniformMatrix4fv(uniform_location, 1, GL_FALSE, model[0]);
-
-    uniform_location = glGetUniformLocation(shader, "view");
+    unsigned int uniform_location = glGetUniformLocation(shader, "view");
     glUniformMatrix4fv(uniform_location, 1, GL_FALSE, view[0]);
 
     uniform_location = glGetUniformLocation(shader, "projection");
@@ -236,11 +312,8 @@ void render(SimpleWindow* window, Camera* camera, SimpleTimer* timer, Shader sha
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.0, 0.3, 0.7, 1.0);
 
-    mat4 model;
-    glm_mat4_identity(model);
     mat4 proj;
     glm_mat4_identity(proj);
-    glm_translate(model, (vec3) {-4.0f, -6.0f, 0.0f});
     glm_perspective_rh_no(glm_rad(90), 1920.0f / 1080.0f, 0.1f, 100.0f, proj);
     camera_update_input(camera, window);
     camera_recalculate_mat(camera);
@@ -249,14 +322,6 @@ void render(SimpleWindow* window, Camera* camera, SimpleTimer* timer, Shader sha
     static size_t blocks_z = 100;
     glBindTexture(GL_TEXTURE_2D, texture_atlas->texture_id);
     glBindVertexArray(vertex_array_id);
-    for(size_t i = 0; i < blocks_z; i++)
-    {
-        for(size_t j = 0; j < blocks_x; j++)
-        {
-            glm_translate(model, (vec3){1.0f, 0.0f, 0.0f});
-            shader_upload_data(shader, model, camera->view, proj);
-            glDrawArrays(GL_TRIANGLES, 0, 12*3);
-        }
-        glm_translate(model, (vec3) {-(float)(blocks_x), 0.0f, -1.0f});
-    }
+    shader_upload_data(shader, camera->view, proj);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 36, count);
 }

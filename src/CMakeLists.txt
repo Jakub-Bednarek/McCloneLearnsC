@@ -11,13 +11,21 @@ set(CORE_HEADERS
     core/error.h
     core/input.h
     core/timer.h
-    core/ecs/entity.h)
+    core/ecs/entity.h
+    core/ecs/component.h
+    core/ecs/system.h
+    core/ecs/ecs_manager.h
+    core/allocators/pool_allocator.h)
 
 set(CORE_SOURCES
     core/input.c
     core/timer.c
     core/error.c
-    core/ecs/entity.c)
+    core/ecs/entity.c
+    core/ecs/component.c
+    core/ecs/system.c
+    core/ecs/ecs_manager.c
+    core/allocators/pool_allocator.c)
 
 set(GRAPHICS_HEADERS
     graphics/renderer.h
@@ -32,9 +40,12 @@ set(GRAPHICS_SOURCES
     graphics/texture_atlas.c)
 
 set(WORLD_HEADERS
-    world/world.h)
+    world/world.h
+    world/chunk_mesh.h)
 
-set(WORLD_SOURCES)
+set(WORLD_SOURCES
+    world/world.c
+    world/chunk_mesh.c)
 
 set(UTILS_HEADERS
     utils/file_loader.h
