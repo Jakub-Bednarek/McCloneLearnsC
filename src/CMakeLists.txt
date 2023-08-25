@@ -1,4 +1,4 @@
-set(LIBRARY_NAME engine)
+set(ENGINE_LIBRARY_NAME engine)
 
 add_subdirectory(data_structures)
 
@@ -15,7 +15,7 @@ set(CORE_HEADERS
     core/ecs/component.h
     core/ecs/system.h
     core/ecs/ecs_manager.h
-    core/allocators/pool_allocator.h)
+    core/allocators/include/pool_allocator/pool_allocator.h)
 
 set(CORE_SOURCES
     core/input.c
@@ -25,7 +25,7 @@ set(CORE_SOURCES
     core/ecs/component.c
     core/ecs/system.c
     core/ecs/ecs_manager.c
-    core/allocators/pool_allocator.c)
+    core/allocators/src/pool_allocator.c)
 
 set(GRAPHICS_HEADERS
     graphics/renderer.h
@@ -55,8 +55,10 @@ set(UTILS_SOURCES
     utils/file_loader.c
     utils/bmp_loader.c)
 
-add_library(${LIBRARY_NAME} STATIC ${CORE_SOURCES} ${GRAPHICS_SOURCES} ${WORLD_SOURCES} ${UTILS_SOURCES})
-target_include_directories(${LIBRARY_NAME} PUBLIC ${INCLUDE_DIRS})
-target_link_libraries(${LIBRARY_NAME}
+add_library(${ENGINE_LIBRARY_NAME} STATIC ${CORE_SOURCES} ${GRAPHICS_SOURCES} ${WORLD_SOURCES} ${UTILS_SOURCES})
+target_include_directories(${ENGINE_LIBRARY_NAME} PUBLIC ${INCLUDE_DIRS})
+target_link_libraries(${ENGINE_LIBRARY_NAME}
     ${LINUX_LIBS}
     data_structures)
+
+add_subdirectory(core)
