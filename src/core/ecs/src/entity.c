@@ -1,4 +1,4 @@
-#include "entity.h"
+#include "ecs/entity.h"
 
 #include <errno.h>
 #include <stdlib.h>

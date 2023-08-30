@@ -1,5 +1,5 @@
-#include "texture_atlas.h"
-#include "core/error.h"
+#include "graphics/texture_atlas.h"
+#include "utils/error.h"
 #include "utils/bmp_loader.h"
 
 #include <GL/gl.h>

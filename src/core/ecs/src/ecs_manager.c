@@ -1,7 +1,7 @@
-#include "ecs_manager.h"
+#include "ecs/ecs_manager.h"
 
-#include "component.h"
-#include "system.h"
+#include "ecs/component.h"
+#include "ecs/system.h"
 
 #include <errno.h>
 #include <string.h>

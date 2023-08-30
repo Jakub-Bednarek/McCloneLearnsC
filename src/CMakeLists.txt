@@ -1,64 +1,22 @@
 set(ENGINE_LIBRARY_NAME engine)
 
 add_subdirectory(data_structures)
+add_subdirectory(graphics)
+add_subdirectory(core)
+add_subdirectory(utils)
+add_subdirectory(world)
 
 set(LINUX_LIBS "-lGLU -lGL -lX11 -lXfixes -lm" GLAD cglm_headers)
-set(INCLUDE_DIRS
+target_include_engine_directory(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR/vender/glad2/include})
+    ${CMAKE_CURRENT_SOURCE_DIR/vender/glad2/include}
+)
 
-set(CORE_HEADERS
-    core/error.h
-    core/input.h
-    core/timer.h
-    core/ecs/entity.h
-    core/ecs/component.h
-    core/ecs/system.h
-    core/ecs/ecs_manager.h
-    core/allocators/include/pool_allocator/pool_allocator.h)
+get_property(ENGINE_INCLUDE_PATHS GLOBAL PROPERTY ENGINE_INCLUDE_PATHS)
+get_property(ENGINE_SOURCE_FILES GLOBAL PROPERTY ENGINE_SOURCE_FILES)
 
-set(CORE_SOURCES
-    core/input.c
-    core/timer.c
-    core/error.c
-    core/ecs/entity.c
-    core/ecs/component.c
-    core/ecs/system.c
-    core/ecs/ecs_manager.c
-    core/allocators/src/pool_allocator.c)
-
-set(GRAPHICS_HEADERS
-    graphics/renderer.h
-    graphics/window.h
-    graphics/texture.h
-    graphics/texture_atlas.h)
-
-set(GRAPHICS_SOURCES
-    graphics/renderer.c
-    graphics/window.c
-    graphics/texture.c
-    graphics/texture_atlas.c)
-
-set(WORLD_HEADERS
-    world/world.h
-    world/chunk_mesh.h)
-
-set(WORLD_SOURCES
-    world/world.c
-    world/chunk_mesh.c)
-
-set(UTILS_HEADERS
-    utils/file_loader.h
-    utils/bmp_loader.h)
-
-set(UTILS_SOURCES
-    utils/file_loader.c
-    utils/bmp_loader.c)
-
-add_library(${ENGINE_LIBRARY_NAME} STATIC ${CORE_SOURCES} ${GRAPHICS_SOURCES} ${WORLD_SOURCES} ${UTILS_SOURCES})
-target_include_directories(${ENGINE_LIBRARY_NAME} PUBLIC ${INCLUDE_DIRS})
+add_library(${ENGINE_LIBRARY_NAME} STATIC ${CORE_SOURCES} ${GRAPHICS_SOURCES} ${WORLD_SOURCES} ${UTILS_SOURCES} ${ENGINE_SOURCE_FILES})
+target_include_directories(${ENGINE_LIBRARY_NAME} PUBLIC ${ENGINE_INCLUDE_PATHS})
 target_link_libraries(${ENGINE_LIBRARY_NAME}
     ${LINUX_LIBS}
-    data_structures)
-
-add_subdirectory(core)
+)

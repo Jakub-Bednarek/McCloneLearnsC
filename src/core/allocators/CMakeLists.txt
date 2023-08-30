@@ -1,3 +1,4 @@
-target_include_engine_directory(${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_engine_directory(include)
+target_add_engine_sources(src/pool_allocator.c)
 
 add_ut_subdirectory(tests)

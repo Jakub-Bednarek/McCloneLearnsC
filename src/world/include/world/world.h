@@ -1,8 +1,8 @@
 #ifndef WORLD_H
 #define WORLD_H
 
-#include "core/input.h"
-#include "core/timer.h"
+#include "utils/input.h"
+#include "utils/timer.h"
 #include <cglm/cglm.h>
 
 #include <stdio.h>

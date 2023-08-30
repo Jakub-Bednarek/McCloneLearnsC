@@ -1,4 +1,4 @@
-#include "bmp_loader.h"
+#include "utils/bmp_loader.h"
 
 #include <stdint.h>
 #include <stdlib.h>

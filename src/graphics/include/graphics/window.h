@@ -8,8 +8,8 @@
 #define GLX_CONTEXT_FAILURE 5
 #define GL_LOAD_FAILURE 6
 
-#include "core/error.h"
-#include "core/event.h"
+#include "utils/error.h"
+#include "utils/event.h"
 
 #include <X11/Xlib.h>
 

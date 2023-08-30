@@ -1,4 +1,4 @@
-#include "world.h"
+#include "world/world.h"
 
 float cube_vertices[] =  {
     -0.5f, -0.5f, -0.5f,

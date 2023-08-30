@@ -1,4 +1,4 @@
-#include "chunk_mesh.h"
+#include "world/chunk_mesh.h"
 
 #include <stdlib.h>
 #include <stdio.h>

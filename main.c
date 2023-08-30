@@ -2,10 +2,10 @@
 #include "graphics/renderer.h"
 #include "graphics/texture.h"
 #include "graphics/texture_atlas.h"
-#include "core/timer.h"
-#include "core/ecs/ecs_manager.h"
+#include "utils/timer.h"
+#include "ecs/ecs_manager.h"
 #include "utils/bmp_loader.h"
-#include "core/ecs/entity.h"
+#include "ecs/entity.h"
 #include "data_structures/hash_map.h"
 
 #include <stdio.h>

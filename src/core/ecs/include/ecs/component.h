@@ -2,7 +2,7 @@
 #define COMPONENT_H
 
 #include "entity.h"
-#include "core/allocators/pool_allocator.h"
+#include "pool_allocator/pool_allocator.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -28,7 +28,7 @@ typedef struct {
     size_t max_number_of_elements;
     uint32_t signature;
     ComponentMapping** components_storage;
-    PoolAllocator component_allocator;
+    pool_allocator_t component_allocator;
 } ComponentArray;
 
 typedef struct {

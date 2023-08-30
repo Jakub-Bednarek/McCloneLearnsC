@@ -1,4 +1,4 @@
-#include "component.h"
+#include "ecs/component.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -53,10 +53,10 @@ int32_t component_register(ComponentManager* component_manager, const char* name
         return -1;
     }
     
-    PoolAllocator allocator;
-    if(pool_allocator_alloc(&allocator, sizeof(EntityId) + size, number_of_elements) == -1) {
-        return -1;
-    }
+    pool_allocator_t allocator;
+    // if(pool_allocator_alloc(&allocator, sizeof(EntityId) + size, number_of_elements) == -1) {
+    //     return -1;
+    // }
 
     ComponentArray* component = &component_manager->registered_components[component_manager->next_free_component_index];
     component->component_allocator = allocator;

@@ -1,6 +1,5 @@
 target_include_engine_directory(include)
 target_add_engine_sources(
-    src/hash_map.c
+    src/chunk_mesh.c
+    src/world.c
 )
-
-add_ut_subdirectory(tests)

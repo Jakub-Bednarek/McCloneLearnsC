@@ -2,9 +2,9 @@
 #define RENDERER_H
 
 #include "world/world.h"
-#include "window.h"
-#include "texture.h"
-#include "core/input.h"
+#include "graphics/window.h"
+#include "graphics/texture.h"
+#include "utils/input.h"
 #include "texture_atlas.h"
 
 #include <GL/gl.h>

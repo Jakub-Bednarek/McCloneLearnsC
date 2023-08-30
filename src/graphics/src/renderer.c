@@ -1,4 +1,4 @@
-#include "renderer.h"
+#include "graphics/renderer.h"
 #include "utils/file_loader.h"
 #include "world/chunk_mesh.h"
 
