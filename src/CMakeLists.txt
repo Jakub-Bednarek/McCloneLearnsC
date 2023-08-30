@@ -2,7 +2,8 @@ set(ENGINE_LIBRARY_NAME engine)
 
 add_subdirectory(data_structures)
 add_subdirectory(graphics)
-add_subdirectory(core)
+add_subdirectory(allocators)
+add_subdirectory(ecs)
 add_subdirectory(utils)
 add_subdirectory(world)
 

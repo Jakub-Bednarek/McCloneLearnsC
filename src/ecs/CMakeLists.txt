@@ -5,3 +5,5 @@ target_add_engine_sources(
     src/system.c
     src/ecs_manager.c
 )
+
+add_ut_subdirectory(tests)

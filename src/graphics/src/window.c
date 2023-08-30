@@ -11,6 +11,8 @@
 #define DEFAULT_X_WINDOW_POS 0
 #define DEFAULT_Y_WINDOW_POS 0
 
+int x = 0;
+
 void dummy_on_key_pressed(const KeyPressEvent*, void*) {}
 void dummy_on_key_released(const KeyReleaseEvent*, void*) {}
 void dummy_on_button_pressed(const ButtonPressEvent*, void*) {}

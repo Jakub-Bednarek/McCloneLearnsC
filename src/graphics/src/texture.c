@@ -11,6 +11,8 @@ float texture_coords[] = {
     1.0f, 1.0f
 };
 
+int x = 0;
+
 Texture create_texture(const char* path)
 {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
