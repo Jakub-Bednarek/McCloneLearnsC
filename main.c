@@ -31,7 +31,7 @@ int main()
     SimpleWindow* simple_window = window_create(1920, 1080);
     Camera camera = camera_create();
 
-    // ecs_initialize(1000, 10);
+    ecs_initialize(1000, 10);
 
     const char* textures_to_load[4] = {"res/textures/dirt.bmp", "res/textures/sand.bmp", "res/textures/stone.bmp", "res/textures/wood.bmp"};
     TextureAtlas texture_atlas = texture_atlas_create(16, 16, textures_to_load, 4);

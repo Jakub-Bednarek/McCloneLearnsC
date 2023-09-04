@@ -18,6 +18,18 @@ entity_error_t entity_manager_alloc(entity_manager_t** entity_manager, int max_n
         return MEM_FAILURE;
     }
 
+    (*entity_manager)->entities = calloc(max_number_of_entities, sizeof(entity_id_t));
+    if(!(*entity_manager)->entities) {
+        entity_manager_free(*entity_manager);
+        return MEM_FAILURE;
+    }
+
+    (*entity_manager)->entity_signatures = calloc(max_number_of_entities, sizeof(signature_t));
+    if(!(*entity_manager)->entity_signatures) {
+        entity_manager_free(*entity_manager);
+        return MEM_FAILURE;
+    }
+
     printf("Initializng entity_manager with %d entity allocations\n", max_number_of_entities);
 
     for(entity_id_t i = 0; i < max_number_of_entities; ++i) {
@@ -27,6 +39,8 @@ entity_error_t entity_manager_alloc(entity_manager_t** entity_manager, int max_n
     for(size_t i = 0; i < max_number_of_entities; ++i) {
         (*entity_manager)->entity_signatures[i] = 0;
     }
+
+    printf("After init\n");
 
     (*entity_manager)->first_taken_entity = 0;
     (*entity_manager)->max_entities = max_number_of_entities;
