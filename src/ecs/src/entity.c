@@ -5,107 +5,109 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-void entity_manager_initialize(EntityManager* entity_manager)
+entity_error_t entity_manager_alloc(entity_manager_t** entity_manager, int max_number_of_entities)
 {
-    static bool is_initialized = false;
-    if(is_initialized) {
-        printf("EntityManager is already initialized\n");
-        return;
+    if(max_number_of_entities <= 0) {
+        *entity_manager = NULL;
+        return INVALID_MAX_ENTITIES_VALUE;
     }
 
-    printf("Initializng EntityManager with %d entity allocations\n", MAX_NUMBER_OF_ENTITIES);
-
-    for(EntityId i = 0; i < MAX_NUMBER_OF_ENTITIES; ++i) {
-        entity_manager->entities[i] = i;
+    *entity_manager = calloc(1, sizeof(entity_manager_t));
+    if(!*entity_manager) {
+        *entity_manager = NULL;
+        return MEM_FAILURE;
     }
 
-    for(size_t i = 0; i < MAX_NUMBER_OF_ENTITIES; ++i) {
-        entity_manager->entity_signatures[i] = 0;
+    printf("Initializng entity_manager with %d entity allocations\n", max_number_of_entities);
+
+    for(entity_id_t i = 0; i < max_number_of_entities; ++i) {
+        (*entity_manager)->entities[i] = i;
     }
 
-    entity_manager->first_taken_entity = 0;
-    entity_manager->next_free_entity_index = 0;
-    entity_manager->currently_allocated_entities = 0;
-    is_initialized = true;
+    for(size_t i = 0; i < max_number_of_entities; ++i) {
+        (*entity_manager)->entity_signatures[i] = 0;
+    }
+
+    (*entity_manager)->first_taken_entity = 0;
+    (*entity_manager)->max_entities = max_number_of_entities;
+    (*entity_manager)->next_free_entity_index = 0;
+    (*entity_manager)->n_allocated_entities = 0;
+
+    return ENTITY_OK;
 }
 
-void entity_manager_uninitialize(EntityManager* entity_manager)
+void entity_manager_free(entity_manager_t* entity_manager)
 {
+    free(entity_manager);
     printf("Entity manager unitialize\n");
 }
 
-EntityId entity_get_next_free_id(EntityManager* entity_manager)
+entity_error_t entity_get_next_free_id(entity_manager_t* entity_manager, entity_id_t* entity_to_allocate)
 {
-    if(entity_manager->currently_allocated_entities == MAX_NUMBER_OF_ENTITIES) {
-        errno = MAX_ENTITIES_ALLOCATED;
-        return -1;
+    if(entity_manager->n_allocated_entities == entity_manager->max_entities) {
+        return MAX_ENTITIES_ALLOCATED;
     }
 
-    const EntityId free_entity = entity_manager->entities[entity_manager->next_free_entity_index];
+    const entity_id_t free_entity = entity_manager->entities[entity_manager->next_free_entity_index];
     ++entity_manager->next_free_entity_index;
-    ++entity_manager->currently_allocated_entities;
+    ++entity_manager->n_allocated_entities;
 
-    return free_entity;
+    return ENTITY_OK;
 }
 
-int32_t entity_free(EntityManager* entity_manager, const EntityId entity)
+entity_error_t entity_free(entity_manager_t* entity_manager, const entity_id_t entity_id)
 {
-    if(entity >= MAX_NUMBER_OF_ENTITIES) {
-        errno = ENTITY_OUT_OF_RANGE;
-        return -1;
+    if(entity_id < 0 || entity_id >= entity_manager->max_entities) {
+        return ENTITY_OUT_OF_RANGE;
     }
 
-    int32_t entity_index = -1;
+    entity_id_t entity_index = entity_manager->max_entities;
     for(size_t index = entity_manager->first_taken_entity; index < entity_manager->next_free_entity_index; ++index) {
-        if(entity_manager->entities[index] == entity) {
+        if(entity_manager->entities[index] == entity_id) {
             entity_index = index;
             break;
         }
     }
 
-    if(entity_index == -1) {
-        errno = ENTITY_NOT_FOUND;
-        return -1;
+    if(entity_index == entity_manager->max_entities) {
+        return ENTITY_NOT_FOUND;
     }
     
     for(size_t index = entity_index; index < entity_manager->next_free_entity_index - 1; index++) {
         entity_manager->entities[index] = entity_manager->entities[index + 1];
     }
-    entity_manager->entities[entity_manager->next_free_entity_index - 1] = entity;
+    entity_manager->entities[entity_manager->next_free_entity_index - 1] = entity_id;
     --entity_manager->next_free_entity_index;
 
-    return 0;
+    return ENTITY_OK;
 }
 
-int32_t entity_add_to_signature(EntityManager* entity_manager, EntityId entity, Signature signature)
+entity_error_t entity_add_component_signature(entity_manager_t* entity_manager, entity_id_t entity_id, signature_t component_signature)
 {
-    if(entity >= MAX_NUMBER_OF_ENTITIES) {
-        errno = ENTITY_OUT_OF_RANGE;
-        return -1;
+    if(entity_id < 0 || entity_id >= entity_manager->max_entities) {
+        return ENTITY_OUT_OF_RANGE;
     }
 
-    entity_manager->entity_signatures[entity] |= signature;
-    return 0;
+    entity_manager->entity_signatures[entity_id] |= component_signature;
+    return ENTITY_OK;
 }
 
-int32_t entity_remove_from_signature(EntityManager* entity_manager, EntityId entity, Signature signature)
+entity_error_t entity_remove_component_signature(entity_manager_t* entity_manager, entity_id_t entity_id, signature_t signature_t)
 {
-    if(entity >= MAX_NUMBER_OF_ENTITIES) {
-        errno = ENTITY_OUT_OF_RANGE;
-        return -1;
+    if(entity_id < 0 || entity_id >= entity_manager->max_entities) {
+        return ENTITY_OUT_OF_RANGE;
     }
 
-    entity_manager->entity_signatures[entity] ^= signature;
-    return 0;
+    entity_manager->entity_signatures[entity_id] ^= signature_t;
+    return ENTITY_OK;
 }
 
-int32_t entity_get_signature(EntityManager* entity_manager, EntityId entity, Signature* signature)
+entity_error_t entity_get_signature(entity_manager_t* entity_manager, entity_id_t entity_id, signature_t* signature)
 {
-    if(entity >= MAX_NUMBER_OF_ENTITIES) {
-        errno = ENTITY_OUT_OF_RANGE;
-        return -1;
+    if(entity_id < 0 || entity_id >= entity_manager->max_entities) {
+        return ENTITY_OUT_OF_RANGE;
     }
 
-    *signature = entity_manager->entity_signatures[entity];
-    return 0;
+    *signature = entity_manager->entity_signatures[entity_id];
+    return ENTITY_OK;
 }

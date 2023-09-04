@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-int32_t system_entity_find(System* system, const EntityId entity)
+int32_t system_entity_find(System* system, const entity_id_t entity)
 {
     for(size_t i = 0; i < system->number_of_registered_entities; ++i) {
         if(system->registered_entities[i] == entity) {
@@ -16,7 +16,7 @@ int32_t system_entity_find(System* system, const EntityId entity)
     return -1;
 }
 
-int32_t system_add_entity(System* system, const EntityId entity)
+int32_t system_add_entity(System* system, const entity_id_t entity)
 {
     if(system_entity_find(system, entity) != -1) {
         errno = ENTITY_ALREADY_REGISTERED_IN_SYSTEM;
@@ -26,7 +26,7 @@ int32_t system_add_entity(System* system, const EntityId entity)
     system->registered_entities[system->number_of_registered_entities++] = entity;
 }
 
-int32_t system_remove_entity(System* system, const EntityId entity)
+int32_t system_remove_entity(System* system, const entity_id_t entity)
 {
     int32_t found_index = system_entity_find(system, entity);
 
@@ -45,19 +45,19 @@ int32_t system_remove_entity(System* system, const EntityId entity)
     return 0;
 }
 
-int32_t system_manager_initialize(SystemManager* system_manager)
+int32_t system_manager_initialize(system_manager_t* system_manager)
 {
     printf("System manager initialize\n");
     system_manager->number_of_registered_systems = 0;
 }
 
-int32_t system_manager_uninitialize(SystemManager* system_manager)
+int32_t system_manager_uninitialize(system_manager_t* system_manager)
 {
     printf("System manager uninitialize\n");
     system_manager->number_of_registered_systems = 0;
 }
 
-int32_t system_manager_add_entity(SystemManager* system_manager, const EntityId entity, const Signature signature)
+int32_t system_manager_add_entity(system_manager_t* system_manager, const entity_id_t entity, const signature_t signature)
 {
     for(size_t i = 0; i < system_manager->number_of_registered_systems; ++i) {
         if((system_manager->registered_systems[i].signature & signature) > 0) {
@@ -68,7 +68,7 @@ int32_t system_manager_add_entity(SystemManager* system_manager, const EntityId 
     return 0;
 }
 
-int32_t system_manager_extend_entity_signature(SystemManager* system_manager, const EntityId entity, const Signature signature)
+int32_t system_manager_extend_entity_signature(system_manager_t* system_manager, const entity_id_t entity, const signature_t signature)
 {
     System* system = NULL;
     bool entity_found = false;
@@ -83,7 +83,7 @@ int32_t system_manager_extend_entity_signature(SystemManager* system_manager, co
     return 0;
 }
 
-int32_t system_manager_reduce_entity_signature(SystemManager* system_manager, const EntityId entity, const Signature signature)
+int32_t system_manager_reduce_entity_signature(system_manager_t* system_manager, const entity_id_t entity, const signature_t signature)
 {
     System* system = NULL;
     bool entity_removed = false;
@@ -99,7 +99,7 @@ int32_t system_manager_reduce_entity_signature(SystemManager* system_manager, co
     return (int32_t)(entity_removed);
 }
 
-int32_t system_manager_remove_entity(SystemManager* system_manager, const EntityId entity)
+int32_t system_manager_remove_entity(system_manager_t* system_manager, const entity_id_t entity)
 {
     for(size_t i = 0; i < system_manager->number_of_registered_systems; ++i) {
         system_remove_entity(&system_manager->registered_systems[i], entity);
@@ -108,7 +108,7 @@ int32_t system_manager_remove_entity(SystemManager* system_manager, const Entity
     return 0;
 }
 
-int32_t system_register(SystemManager* system_manager, const char* name, void(*update_callback)(), const Signature system_signature)
+int32_t system_register(system_manager_t* system_manager, const char* name, void(*update_callback)(), const signature_t system_signature)
 {
     for(size_t i = 0; i < system_manager->number_of_registered_systems; ++i) {
         if(strcmp(system_manager->registered_systems[i].name, name) == 0) {
@@ -126,7 +126,7 @@ int32_t system_register(SystemManager* system_manager, const char* name, void(*u
     return 0;
 }
 
-void system_manager_on_update(SystemManager* system_manager, const double delta_time)
+void system_manager_on_update(system_manager_t* system_manager, const double delta_time)
 {
     for(size_t i = 0; i < system_manager->number_of_registered_systems; ++i) {
         system_manager->registered_systems[i].on_update(delta_time);

@@ -18,31 +18,31 @@
 #define MAX_NUMBER_OF_COMPONENTS_TYPES 100
 
 typedef struct {
-    EntityId entity;
+    entity_id_t entity;
     void* component_data;
-} ComponentMapping;
+} component_mapping_t;
 
 typedef struct {
     const char* name;
     size_t number_of_allocated_components;
     size_t max_number_of_elements;
     uint32_t signature;
-    ComponentMapping** components_storage;
+    component_mapping_t** components_storage;
     pool_allocator_t component_allocator;
-} ComponentArray;
+} component_array_t;
 
 typedef struct {
     size_t next_free_component_index;
     uint32_t next_signature;
-    ComponentArray registered_components[MAX_NUMBER_OF_COMPONENTS_TYPES];
-} ComponentManager;
+    component_array_t registered_components[MAX_NUMBER_OF_COMPONENTS_TYPES];
+} component_manager_t;
 
-extern void    component_manager_initialize(ComponentManager*);
-extern void    component_manager_uninitialize(ComponentManager*);
-extern int32_t component_register(ComponentManager*, const char*, size_t, size_t);
-extern int32_t component_unregister(ComponentManager*, const char*);
-extern int32_t component_add_to_entity(ComponentManager*, const char*, EntityId, void**, Signature*);
-extern int32_t component_remove_from_entity(ComponentManager*, const char*, EntityId, Signature*);
-extern void*   component_get_from_entity(ComponentManager*, const char*, EntityId);
+extern void    component_manager_initialize(component_manager_t*);
+extern void    component_manager_uninitialize(component_manager_t*);
+extern int32_t component_register(component_manager_t*, const char*, size_t, size_t);
+extern int32_t component_unregister(component_manager_t*, const char*);
+extern int32_t component_add_to_entity(component_manager_t*, const char*, entity_id_t, void**, signature_t*);
+extern int32_t component_remove_from_entity(component_manager_t*, const char*, entity_id_t, signature_t*);
+extern void*   component_get_from_entity(component_manager_t*, const char*, entity_id_t);
 
 #endif // COMPONENT_H

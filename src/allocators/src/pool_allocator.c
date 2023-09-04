@@ -18,7 +18,7 @@ typedef struct {
     Chunk* next_free_element;
 } basic_pool_allocator_t;
 
-pool_allocator_t pool_allocator_create(const size_t element_size, const size_t number_of_elements)
+pool_allocator_t pool_allocator_alloc(const size_t element_size, const size_t number_of_elements)
 {
     if (element_size < sizeof(void *)) {
         errno = ELEMENT_SIZE_TOO_SMALL;
@@ -68,7 +68,7 @@ void pool_allocator_free(pool_allocator_t allocator)
     pool_allocator->next_free_element = NULL;
 }
 
-void *pool_allocator_alloc(pool_allocator_t allocator)
+void *pool_allocator_alloc_element(pool_allocator_t allocator)
 {
     if(!allocator)
     {
