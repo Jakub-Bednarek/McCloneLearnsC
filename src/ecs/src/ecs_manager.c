@@ -34,14 +34,14 @@ int32_t ecs_uninitialize()
 entity_id_t ecs_get_free_entity()
 {
     entity_id_t allocated_id = 0;
-    assert(entity_get_next_free_id(g_ecs_manager.entity_manager, &allocated_id) == ENTITY_OK);
+    assert(entity_manager_get_next_free_id(g_ecs_manager.entity_manager, &allocated_id) == ENTITY_OK);
 
     return allocated_id;
 }
 
 int32_t ecs_remove_entity(const entity_id_t entity)
 {
-    int32_t ret_val = entity_free(g_ecs_manager.entity_manager, entity);
+    int32_t ret_val = entity_manager_free_entity(g_ecs_manager.entity_manager, entity);
     if(ret_val == -1) {
         printf("Error while removing entity with id: %d, error code: %d\n", entity, errno);
         return ret_val;
@@ -76,10 +76,10 @@ int32_t ecs_add_component_to_entity(const char* name, const entity_id_t entity, 
         return ret_val;
     }
 
-    entity_add_component_signature(g_ecs_manager.entity_manager, entity, component_signature);
+    entity_manager_add_component_signature_to_entity(g_ecs_manager.entity_manager, entity, component_signature);
 
     signature_t entity_signature = 0;
-    entity_get_signature(g_ecs_manager.entity_manager, entity, &entity_signature);
+    entity_manager_get_entity_signature(g_ecs_manager.entity_manager, entity, &entity_signature);
     system_manager_extend_entity_signature(&g_ecs_manager.system_manager, entity, entity_signature);
 
     return 0;
@@ -94,10 +94,10 @@ int32_t ecs_remove_component_from_entity(const char* name, const entity_id_t ent
         return ret_val;
     }
 
-    entity_remove_component_signature(g_ecs_manager.entity_manager, entity, component_signature);
+    entity_manager_remove_component_signature_from_entity(g_ecs_manager.entity_manager, entity, component_signature);
 
     signature_t entity_signature = 0;
-    entity_get_signature(g_ecs_manager.entity_manager, entity, &entity_signature);
+    entity_manager_get_entity_signature(g_ecs_manager.entity_manager, entity, &entity_signature);
     system_manager_reduce_entity_signature(&g_ecs_manager.system_manager, entity, entity_signature);
 
     return 0;

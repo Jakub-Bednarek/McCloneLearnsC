@@ -66,7 +66,7 @@ int main()
         window_swap_buffers(simple_window);
     }
 
-    // ecs_uninitialize();
+    ecs_uninitialize();
     gl_clean_up(shader, &vbo, &texture_buffer, &vao, &ebo);
     window_destroy(simple_window);
 

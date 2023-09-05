@@ -5,6 +5,17 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+const signature_t EMPTY_SIGNATURE = 0;
+
+struct entity_manager_t {
+    entity_id_t* entities;
+    signature_t* entity_signatures;
+    entity_id_t first_taken_entity;
+    size_t max_entities;
+    size_t next_free_entity_index;
+    size_t n_allocated_entities;
+};
+
 entity_error_t entity_manager_alloc(entity_manager_t** entity_manager, int max_number_of_entities)
 {
     if(max_number_of_entities <= 0) {
@@ -30,17 +41,13 @@ entity_error_t entity_manager_alloc(entity_manager_t** entity_manager, int max_n
         return MEM_FAILURE;
     }
 
-    printf("Initializng entity_manager with %d entity allocations\n", max_number_of_entities);
-
     for(entity_id_t i = 0; i < max_number_of_entities; ++i) {
         (*entity_manager)->entities[i] = i;
     }
 
     for(size_t i = 0; i < max_number_of_entities; ++i) {
-        (*entity_manager)->entity_signatures[i] = 0;
+        (*entity_manager)->entity_signatures[i] = EMPTY_SIGNATURE;
     }
-
-    printf("After init\n");
 
     (*entity_manager)->first_taken_entity = 0;
     (*entity_manager)->max_entities = max_number_of_entities;
@@ -52,26 +59,28 @@ entity_error_t entity_manager_alloc(entity_manager_t** entity_manager, int max_n
 
 void entity_manager_free(entity_manager_t* entity_manager)
 {
+    free(entity_manager->entities);
+    free(entity_manager->entity_signatures);
     free(entity_manager);
-    printf("Entity manager unitialize\n");
 }
 
-entity_error_t entity_get_next_free_id(entity_manager_t* entity_manager, entity_id_t* entity_to_allocate)
+entity_error_t entity_manager_get_next_free_id(entity_manager_t* entity_manager, entity_id_t* entity_to_allocate)
 {
     if(entity_manager->n_allocated_entities == entity_manager->max_entities) {
         return MAX_ENTITIES_ALLOCATED;
     }
 
-    const entity_id_t free_entity = entity_manager->entities[entity_manager->next_free_entity_index];
+    *entity_to_allocate = entity_manager->entities[entity_manager->next_free_entity_index];
+    entity_manager->entity_signatures[*entity_to_allocate] = EMPTY_SIGNATURE;
     ++entity_manager->next_free_entity_index;
     ++entity_manager->n_allocated_entities;
 
     return ENTITY_OK;
 }
 
-entity_error_t entity_free(entity_manager_t* entity_manager, const entity_id_t entity_id)
+entity_error_t entity_manager_free_entity(entity_manager_t* entity_manager, const entity_id_t entity_id)
 {
-    if(entity_id < 0 || entity_id >= entity_manager->max_entities) {
+    if(entity_id >= entity_manager->max_entities) {
         return ENTITY_OUT_OF_RANGE;
     }
 
@@ -92,13 +101,14 @@ entity_error_t entity_free(entity_manager_t* entity_manager, const entity_id_t e
     }
     entity_manager->entities[entity_manager->next_free_entity_index - 1] = entity_id;
     --entity_manager->next_free_entity_index;
+    --entity_manager->n_allocated_entities;
 
     return ENTITY_OK;
 }
 
-entity_error_t entity_add_component_signature(entity_manager_t* entity_manager, entity_id_t entity_id, signature_t component_signature)
+entity_error_t entity_manager_add_component_signature_to_entity(entity_manager_t* entity_manager, entity_id_t entity_id, signature_t component_signature)
 {
-    if(entity_id < 0 || entity_id >= entity_manager->max_entities) {
+    if(entity_id >= entity_manager->max_entities) {
         return ENTITY_OUT_OF_RANGE;
     }
 
@@ -106,22 +116,31 @@ entity_error_t entity_add_component_signature(entity_manager_t* entity_manager, 
     return ENTITY_OK;
 }
 
-entity_error_t entity_remove_component_signature(entity_manager_t* entity_manager, entity_id_t entity_id, signature_t signature_t)
+entity_error_t entity_manager_remove_component_signature_from_entity(entity_manager_t* entity_manager, entity_id_t entity_id, signature_t signature_t)
 {
-    if(entity_id < 0 || entity_id >= entity_manager->max_entities) {
+    if(entity_id >= entity_manager->max_entities) {
         return ENTITY_OUT_OF_RANGE;
     }
 
-    entity_manager->entity_signatures[entity_id] ^= signature_t;
+    entity_manager->entity_signatures[entity_id] &= (~signature_t);
     return ENTITY_OK;
 }
 
-entity_error_t entity_get_signature(entity_manager_t* entity_manager, entity_id_t entity_id, signature_t* signature)
+entity_error_t entity_manager_get_entity_signature(entity_manager_t* entity_manager, entity_id_t entity_id, signature_t* signature)
 {
-    if(entity_id < 0 || entity_id >= entity_manager->max_entities) {
+    if(entity_id >= entity_manager->max_entities) {
         return ENTITY_OUT_OF_RANGE;
     }
 
     *signature = entity_manager->entity_signatures[entity_id];
     return ENTITY_OK;
+}
+
+size_t entity_manager_get_number_of_allocated_entities(entity_manager_t* entity_manager)
+{
+    if(!entity_manager) {
+        return 0;
+    }
+
+    return entity_manager->n_allocated_entities;
 }
