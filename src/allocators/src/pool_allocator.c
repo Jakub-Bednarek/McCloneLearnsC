@@ -9,31 +9,29 @@ struct Chunk {
     Chunk* next;
 };
 
-typedef struct {
+struct pool_allocator_t {
     size_t memory_used;
     size_t element_size;
     size_t number_of_allocations;
     size_t max_allocations;
     Chunk* pool_start;
     Chunk* next_free_element;
-} basic_pool_allocator_t;
+};
 
-pool_allocator_t pool_allocator_alloc(const size_t element_size, const size_t number_of_elements)
+pool_allocator_error_t pool_allocator_alloc(pool_allocator_t** allocator, const size_t element_size, const size_t number_of_elements)
 {
     if (element_size < sizeof(void *)) {
-        errno = ELEMENT_SIZE_TOO_SMALL;
-        return NULL;
+        return MALLOC_ERROR;
     }
 
-    basic_pool_allocator_t* pool_allocator = calloc(sizeof(basic_pool_allocator_t), 1);
+    pool_allocator_t* pool_allocator = calloc(sizeof(pool_allocator_t), 1);
     if(!pool_allocator) {
-        return NULL;
+        return MALLOC_ERROR;
     }
 
     Chunk *chunk_begin = calloc(number_of_elements, element_size);
     if (chunk_begin == NULL) {
-        errno = POOL_MEMORY_ALLOCATION_FAILURE;
-        return NULL;
+        return MALLOC_ERROR;
     }
 
     pool_allocator->pool_start = chunk_begin;
@@ -51,31 +49,30 @@ pool_allocator_t pool_allocator_alloc(const size_t element_size, const size_t nu
 
     current_chunk->next = NULL;
 
-    return pool_allocator;
+    return POOL_ALLOCATOR_OK;
 }
 
-void pool_allocator_free(pool_allocator_t allocator)
+void pool_allocator_free(pool_allocator_t* allocator)
 {
     if(!allocator)
     {
         return;
     }
 
-    basic_pool_allocator_t* pool_allocator = (basic_pool_allocator_t*)allocator;
-    free(pool_allocator->pool_start);
+    free(allocator->pool_start);
 
-    pool_allocator->pool_start = NULL;
-    pool_allocator->next_free_element = NULL;
+    allocator->pool_start = NULL;
+    allocator->next_free_element = NULL;
 }
 
-void *pool_allocator_alloc_element(pool_allocator_t allocator)
+element_t pool_allocator_alloc_element(pool_allocator_t* allocator)
 {
     if(!allocator)
     {
         return NULL;
     }
 
-    basic_pool_allocator_t* pool_allocator = (basic_pool_allocator_t*)allocator;
+    pool_allocator_t* pool_allocator = (pool_allocator_t*)allocator;
     if (pool_allocator->next_free_element == NULL) {
         errno = MAXIMUM_NUMBER_OF_ELEMENTS_ALLOCATED;
         return NULL;
@@ -89,58 +86,52 @@ void *pool_allocator_alloc_element(pool_allocator_t allocator)
     return new_element;
 }
 
-void pool_allocator_free_element(pool_allocator_t allocator, void *element_to_free)
+void pool_allocator_free_element(pool_allocator_t* allocator, void *element_to_free)
 {
     if(!allocator)
     {
         return;
     }
 
-    basic_pool_allocator_t* pool_allocator = (basic_pool_allocator_t*)allocator;
     Chunk *freed_element = (Chunk *)(element_to_free);
-
-    freed_element->next = pool_allocator->next_free_element;
-    pool_allocator->next_free_element = freed_element;
-    pool_allocator->memory_used -= pool_allocator->element_size;
-    --pool_allocator->number_of_allocations;
+    freed_element->next = allocator->next_free_element;
+    allocator->next_free_element = freed_element;
+    allocator->memory_used -= allocator->element_size;
+    --allocator->number_of_allocations;
 }
 
-const size_t pool_allocator_get_element_size(pool_allocator_t allocator)
+const size_t pool_allocator_get_element_size(pool_allocator_t* allocator)
 {
     if(!allocator) {
         return 0;
     }
 
-    basic_pool_allocator_t* pool_allocator = (basic_pool_allocator_t*)(allocator);
-    return pool_allocator->element_size;
+    return allocator->element_size;
 }
 
-const size_t pool_allocator_get_number_of_allocations(pool_allocator_t allocator)
+const size_t pool_allocator_get_number_of_allocations(pool_allocator_t* allocator)
 {
     if(!allocator) {
         return 0;
     }
 
-    basic_pool_allocator_t* pool_allocator = (basic_pool_allocator_t*)(allocator);
-    return pool_allocator->number_of_allocations;
+    return allocator->number_of_allocations;
 }
 
-const size_t pool_allocator_get_memory_used(pool_allocator_t allocator)
+const size_t pool_allocator_get_memory_used(pool_allocator_t* allocator)
 {
     if(!allocator) {
         return 0;
     }
 
-    basic_pool_allocator_t* pool_allocator = (basic_pool_allocator_t*)(allocator);
-    return pool_allocator->memory_used;
+    return allocator->memory_used;
 }
 
-const size_t pool_allocator_get_max_number_of_allocations(pool_allocator_t allocator)
+const size_t pool_allocator_get_max_number_of_allocations(pool_allocator_t* allocator)
 {
     if(!allocator) {
         return 0;
     }
 
-    basic_pool_allocator_t* pool_allocator = (basic_pool_allocator_t*)(allocator);
-    return pool_allocator->max_allocations;
+    return allocator->max_allocations;
 }

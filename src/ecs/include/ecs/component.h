@@ -28,7 +28,7 @@ typedef struct {
     size_t max_number_of_elements;
     uint32_t signature;
     component_mapping_t** components_storage;
-    pool_allocator_t component_allocator;
+    pool_allocator_t* component_allocator;
 } component_array_t;
 
 typedef struct {

@@ -16,7 +16,7 @@ void component_manager_uninitialize(component_manager_t* component_manager)
     printf("Component manager unitialize\n");
     for(size_t i = 0; i < component_manager->next_free_component_index; i++) {
         component_manager->registered_components[i].components_storage = NULL;
-        pool_allocator_free(&component_manager->registered_components[i].component_allocator);
+        pool_allocator_free(component_manager->registered_components[i].component_allocator);
     }
 }
 
@@ -53,10 +53,8 @@ int32_t component_register(component_manager_t* component_manager, const char* n
         return -1;
     }
     
-    pool_allocator_t allocator;
-    // if(pool_allocator_alloc(&allocator, sizeof(entity_id_t) + size, number_of_elements) == -1) {
-    //     return -1;
-    // }
+    pool_allocator_t* allocator = NULL;
+    pool_allocator_alloc(&allocator, size, 100);
 
     component_array_t* component = &component_manager->registered_components[component_manager->next_free_component_index];
     component->component_allocator = allocator;
@@ -86,7 +84,7 @@ int32_t component_unregister(component_manager_t* component_manager, const char*
         return -1;
     }
 
-    pool_allocator_free(&component_manager->registered_components[found_component_index].component_allocator);
+    pool_allocator_free(component_manager->registered_components[found_component_index].component_allocator);
     for(size_t i = found_component_index; i < component_manager->next_free_component_index - 1; i++) {
         // No need for deep copy considering current implementation of PoolAllocator
         component_manager->registered_components[i] = component_manager->registered_components[i + 1];
@@ -119,7 +117,7 @@ int32_t component_add_to_entity(component_manager_t* component_manager, const ch
         }
     }
 
-    component_mapping_t* allocated_component = pool_allocator_alloc_element(&component_array->component_allocator);
+    component_mapping_t* allocated_component = pool_allocator_alloc_element(component_array->component_allocator);
     allocated_component->entity = entity;
     component_array->components_storage[component_array->number_of_allocated_components++] = allocated_component;
     *signature = component_array->signature;
@@ -147,7 +145,7 @@ void* component_get_from_entity(component_manager_t* component_manager, const ch
 
     for(size_t i = 0; i < component_array->number_of_allocated_components; i++) {
         if(component_array->components_storage[i]->entity == entity) {
-            return &component_array->components_storage[i]->component_data;
+            return component_array->components_storage[i]->component_data;
         }
     }
     
@@ -172,7 +170,7 @@ int32_t component_remove_from_entity(component_manager_t* component_manager, con
     *signature = component_array->signature;
     for(size_t i = 0; i < component_array->number_of_allocated_components; i++) {
         if(component_array->components_storage[i]->entity == entity) {
-            pool_allocator_free_element(&component_array->component_allocator, (void*)(component_array->components_storage[i]));
+            pool_allocator_free_element(component_array->component_allocator, (void*)(component_array->components_storage[i]));
         }
     }
 
